@@ -1,6 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, ValidationPipe } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { MattersService } from './matters.service';
+import { CreateMatterDto } from './dto/create-matter.dto';
+import { UpdateMatterDto } from './dto/update-matter.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('Legal Matters')
@@ -13,7 +15,7 @@ export class MattersController {
   @ApiOperation({ summary: 'Create a new matter' })
   @ApiResponse({ status: 201, description: 'Matter created successfully' })
   @Post()
-  create(@Body() createMatterDto: any) {
+  create(@Body(ValidationPipe) createMatterDto: CreateMatterDto) {
     return this.mattersService.create(createMatterDto);
   }
 
@@ -57,7 +59,7 @@ export class MattersController {
   @ApiResponse({ status: 200, description: 'Matter updated successfully' })
   @ApiResponse({ status: 404, description: 'Matter not found' })
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateMatterDto: any) {
+  update(@Param('id') id: string, @Body(ValidationPipe) updateMatterDto: UpdateMatterDto) {
     return this.mattersService.update(id, updateMatterDto);
   }
 

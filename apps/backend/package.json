@@ -22,7 +22,7 @@
     "migration:run": "typeorm-ts-node-commonjs migration:run -d src/database/data-source.ts",
     "migration:revert": "typeorm-ts-node-commonjs migration:revert -d src/database/data-source.ts",
     "schema:drop": "typeorm-ts-node-commonjs schema:drop -d src/database/data-source.ts",
-    "seed": "ts-node src/database/seeds/seed.ts"
+    "seed": "ts-node src/database/run-seed.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",

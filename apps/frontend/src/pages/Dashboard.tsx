@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { 
   Briefcase, 
@@ -13,127 +13,175 @@ import {
   MessageSquare,
   BarChart3
 } from 'lucide-react'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth } from '../contexts/AuthContext'
 import { motion } from 'framer-motion'
+import { mattersApi, contractsApi, usersApi } from '../services/api'
+import { LoadingSpinner } from '../components/ui/LoadingSpinner'
 
 export function Dashboard() {
   const { user } = useAuth()
+  const [loading, setLoading] = useState(true)
+  const [stats, setStats] = useState<any[]>([])
+  const [recentMatters, setRecentMatters] = useState<any[]>([])
+  const [upcomingDeadlines, setUpcomingDeadlines] = useState<any[]>([])
+  const [error, setError] = useState<string | null>(null)
 
-  const stats = [
-    {
-      name: 'Active Matters',
-      value: '24',
-      change: '+12%',
-      changeType: 'positive' as const,
-      icon: Briefcase,
-      color: 'bg-teal-500'
-    },
-    {
-      name: 'Pending Contracts',
-      value: '8',
-      change: '+4%',
-      changeType: 'positive' as const,
-      icon: FileText,
-      color: 'bg-blue-500'
-    },
-    {
-      name: 'Total Clients',
-      value: '156',
-      change: '+8%',
-      changeType: 'positive' as const,
-      icon: Users,
-      color: 'bg-purple-500'
-    },
-    {
-      name: 'Revenue (YTD)',
-      value: '$847K',
-      change: '+15%',
-      changeType: 'positive' as const,
-      icon: DollarSign,
-      color: 'bg-green-500'
-    }
-  ]
+  useEffect(() => {
+    loadDashboardData()
+  }, [])
 
-  const recentMatters = [
-    {
-      id: 1,
-      title: 'Corporate Merger - TechCorp',
-      client: 'TechCorp Industries',
-      status: 'active',
-      priority: 'high',
-      dueDate: '2024-01-15',
-      value: '$250,000'
-    },
-    {
-      id: 2,
-      title: 'Employment Contract Review',
-      client: 'Global Services LLC',
-      status: 'pending',
-      priority: 'medium',
-      dueDate: '2024-01-20',
-      value: '$15,000'
-    },
-    {
-      id: 3,
-      title: 'IP Licensing Agreement',
-      client: 'Innovation Labs',
-      status: 'active',
-      priority: 'high',
-      dueDate: '2024-01-25',
-      value: '$75,000'
-    }
-  ]
+  const loadDashboardData = async () => {
+    try {
+      setLoading(true)
+      setError(null)
 
-  const upcomingDeadlines = [
-    {
-      id: 1,
-      title: 'Contract Amendment Filing',
-      client: 'Apex Corp',
-      date: '2024-01-12',
-      time: '2:00 PM',
-      type: 'filing'
-    },
-    {
-      id: 2,
-      title: 'Client Meeting - Discovery Phase',
-      client: 'Metro Holdings',
-      date: '2024-01-13',
-      time: '10:00 AM',
-      type: 'meeting'
-    },
-    {
-      id: 3,
-      title: 'Court Hearing - Motion Review',
-      client: 'Sterling Enterprises',
-      date: '2024-01-15',
-      time: '9:00 AM',
-      type: 'hearing'
+      const [mattersResponse, contractsResponse, usersResponse] = await Promise.allSettled([
+        mattersApi.getAll(),
+        contractsApi.getAll(),
+        usersApi.getAll()
+      ])
+
+      // Process matters data
+      let matters = []
+      if (mattersResponse.status === 'fulfilled') {
+        matters = mattersResponse.value.data
+        setRecentMatters(matters.slice(0, 3).map((matter: any) => ({
+          id: matter.id,
+          title: matter.title,
+          client: matter.clientName,
+          status: matter.status,
+          priority: matter.priority,
+          dueDate: matter.dueDate ? new Date(matter.dueDate).toLocaleDateString() : 'No due date',
+          value: matter.estimatedValue ? `$${matter.estimatedValue.toLocaleString()}` : 'TBD'
+        })))
+      }
+
+      // Process contracts data
+      let contracts = []
+      if (contractsResponse.status === 'fulfilled') {
+        contracts = contractsResponse.value.data
+      }
+
+      // Process users data
+      let users = []
+      if (usersResponse.status === 'fulfilled') {
+        users = usersResponse.value.data
+      }
+
+      // Calculate stats
+      const activeMatters = matters.filter((m: any) => m.status === 'active').length
+      const pendingContracts = contracts.filter((c: any) => c.status === 'review' || c.status === 'draft').length
+      const totalClients = new Set(matters.map((m: any) => m.clientName)).size
+      const totalRevenue = matters.reduce((sum: number, m: any) => sum + (m.estimatedValue || 0), 0)
+
+      setStats([
+        {
+          name: 'Active Matters',
+          value: activeMatters.toString(),
+          change: '+12%',
+          changeType: 'positive' as const,
+          icon: Briefcase,
+          color: 'bg-teal-500'
+        },
+        {
+          name: 'Pending Contracts',
+          value: pendingContracts.toString(),
+          change: '+4%',
+          changeType: 'positive' as const,
+          icon: FileText,
+          color: 'bg-blue-500'
+        },
+        {
+          name: 'Total Clients',
+          value: totalClients.toString(),
+          change: '+8%',
+          changeType: 'positive' as const,
+          icon: Users,
+          color: 'bg-purple-500'
+        },
+        {
+          name: 'Revenue (YTD)',
+          value: `$${(totalRevenue / 1000000).toFixed(1)}M`,
+          change: '+15%',
+          changeType: 'positive' as const,
+          icon: DollarSign,
+          color: 'bg-green-500'
+        }
+      ])
+
+      // Generate upcoming deadlines from matters with due dates
+      const deadlines = matters
+        .filter((m: any) => m.dueDate && new Date(m.dueDate) > new Date())
+        .sort((a: any, b: any) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+        .slice(0, 3)
+        .map((matter: any, index: number) => ({
+          id: matter.id,
+          title: matter.title,
+          client: matter.clientName,
+          date: new Date(matter.dueDate).toLocaleDateString(),
+          time: '9:00 AM', // Default time for demo
+          type: matter.type
+        }))
+
+      setUpcomingDeadlines(deadlines)
+
+    } catch (err: any) {
+      console.error('Error loading dashboard data:', err)
+      setError('Failed to load dashboard data. Please try again.')
+    } finally {
+      setLoading(false)
     }
-  ]
+  }
 
   const aiInsights = [
     {
       id: 1,
       type: 'risk',
-      title: 'High Risk Contract Clauses Detected',
-      description: 'Found 3 potentially problematic clauses in pending contracts',
-      action: 'Review contracts'
+      title: 'High Value Matters Require Attention',
+      description: `${recentMatters.filter(m => m.priority === 'high').length} high-priority matters need immediate focus`,
+      action: 'Review matters'
     },
     {
       id: 2,
       type: 'opportunity',
       title: 'Client Expansion Opportunity',
-      description: 'TechCorp shows patterns for additional legal services',
+      description: 'Multiple active matters suggest potential for expanded services',
       action: 'Schedule meeting'
     },
     {
       id: 3,
       type: 'deadline',
       title: 'Approaching Deadlines',
-      description: '5 matters have deadlines within the next 7 days',
+      description: `${upcomingDeadlines.length} matters have deadlines within the next 30 days`,
       action: 'Review schedule'
     }
   ]
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner size="lg" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Error Loading Dashboard</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={loadDashboardData}
+            className="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="px-4 lg:px-6">

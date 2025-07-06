@@ -2,6 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Matter } from './entities/matter.entity';
+import { CreateMatterDto } from './dto/create-matter.dto';
+import { UpdateMatterDto } from './dto/update-matter.dto';
 
 @Injectable()
 export class MattersService {
@@ -10,7 +12,7 @@ export class MattersService {
     private mattersRepository: Repository<Matter>,
   ) {}
 
-  async create(createMatterDto: any): Promise<Matter> {
+  async create(createMatterDto: CreateMatterDto): Promise<Matter> {
     const matter = this.mattersRepository.create(createMatterDto);
     return this.mattersRepository.save(matter);
   }
@@ -35,7 +37,7 @@ export class MattersService {
     return matter;
   }
 
-  async update(id: string, updateMatterDto: any): Promise<Matter> {
+  async update(id: string, updateMatterDto: UpdateMatterDto): Promise<Matter> {
     await this.mattersRepository.update(id, updateMatterDto);
     return this.findOne(id);
   }

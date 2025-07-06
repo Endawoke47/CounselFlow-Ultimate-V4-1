@@ -15,16 +15,17 @@ import {
   Archive
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { formatDate, formatCurrency, getStatusColor, getPriorityColor } from '@/lib/utils'
+import { mattersApi } from '../services/api'
+import { LoadingSpinner } from '../components/ui/LoadingSpinner'
 
 interface Matter {
   id: string
   title: string
-  client: string
+  clientName: string
   type: string
   status: 'active' | 'pending' | 'closed' | 'on_hold'
   priority: 'low' | 'medium' | 'high' | 'critical'
-  assignedTo: string
+  assignedLawyer: any
   createdAt: string
   dueDate: string
   estimatedValue: number
@@ -39,88 +40,57 @@ export function MattersPage() {
   const [loading, setLoading] = useState(true)
   const [showFilters, setShowFilters] = useState(false)
 
-  const mockMatters: Matter[] = [
-    {
-      id: '1',
-      title: 'Corporate Merger - TechCorp Acquisition',
-      client: 'TechCorp Industries',
-      type: 'corporate',
-      status: 'active',
-      priority: 'high',
-      assignedTo: 'John Smith',
-      createdAt: '2024-01-01',
-      dueDate: '2024-01-15',
-      estimatedValue: 250000,
-      description: 'Complete merger and acquisition documentation for TechCorp Industries acquisition of StartupCo.'
-    },
-    {
-      id: '2',
-      title: 'Employment Contract Review',
-      client: 'Global Services LLC',
-      type: 'employment',
-      status: 'pending',
-      priority: 'medium',
-      assignedTo: 'Sarah Johnson',
-      createdAt: '2024-01-02',
-      dueDate: '2024-01-20',
-      estimatedValue: 15000,
-      description: 'Review and update employment contracts for C-level executives.'
-    },
-    {
-      id: '3',
-      title: 'IP Licensing Agreement',
-      client: 'Innovation Labs',
-      type: 'intellectual_property',
-      status: 'active',
-      priority: 'high',
-      assignedTo: 'Michael Chen',
-      createdAt: '2024-01-03',
-      dueDate: '2024-01-25',
-      estimatedValue: 75000,
-      description: 'Negotiate and draft intellectual property licensing agreement for patent portfolio.'
-    },
-    {
-      id: '4',
-      title: 'Real Estate Transaction',
-      client: 'Metro Holdings',
-      type: 'real_estate',
-      status: 'closed',
-      priority: 'low',
-      assignedTo: 'Emily Davis',
-      createdAt: '2023-12-15',
-      dueDate: '2024-01-10',
-      estimatedValue: 45000,
-      description: 'Commercial real estate purchase and due diligence for office complex.'
-    },
-    {
-      id: '5',
-      title: 'Litigation - Contract Dispute',
-      client: 'Sterling Enterprises',
-      type: 'litigation',
-      status: 'on_hold',
-      priority: 'critical',
-      assignedTo: 'Robert Wilson',
-      createdAt: '2024-01-05',
-      dueDate: '2024-02-01',
-      estimatedValue: 500000,
-      description: 'Represent client in breach of contract dispute with former business partner.'
-    }
-  ]
-
   useEffect(() => {
-    // Simulate API call
-    const timer = setTimeout(() => {
-      setMatters(mockMatters)
-      setLoading(false)
-    }, 1000)
-
-    return () => clearTimeout(timer)
+    loadMatters()
   }, [])
+
+  const loadMatters = async () => {
+    try {
+      setLoading(true)
+      const response = await mattersApi.getAll()
+      setMatters(response.data)
+    } catch (error) {
+      console.error('Error loading matters:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Utility functions
+  const formatDate = (dateString: string) => {
+    if (!dateString) return 'No date'
+    return new Date(dateString).toLocaleDateString()
+  }
+
+  const formatCurrency = (amount: number) => {
+    if (!amount) return 'TBD'
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount)
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return 'bg-green-100 text-green-800'
+      case 'pending': return 'bg-yellow-100 text-yellow-800'
+      case 'closed': return 'bg-gray-100 text-gray-800'
+      case 'on_hold': return 'bg-red-100 text-red-800'
+      default: return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'critical': return 'bg-red-100 text-red-800'
+      case 'high': return 'bg-orange-100 text-orange-800'
+      case 'medium': return 'bg-blue-100 text-blue-800'
+      case 'low': return 'bg-gray-100 text-gray-800'
+      default: return 'bg-gray-100 text-gray-800'
+    }
+  }
 
   const filteredMatters = matters.filter(matter => {
     const matchesSearch = matter.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         matter.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         matter.assignedTo.toLowerCase().includes(searchTerm.toLowerCase())
+                         matter.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (matter.assignedLawyer && `${matter.assignedLawyer.firstName} ${matter.assignedLawyer.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()))
     
     const matchesStatus = filterStatus === 'all' || matter.status === filterStatus
     const matchesType = filterType === 'all' || matter.type === filterType
@@ -134,16 +104,8 @@ export function MattersPage() {
 
   if (loading) {
     return (
-      <div className="px-4 lg:px-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/2 mb-8"></div>
-          <div className="space-y-4">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="h-24 bg-gray-200 rounded-lg"></div>
-            ))}
-          </div>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner size="lg" />
       </div>
     )
   }
@@ -269,12 +231,12 @@ export function MattersPage() {
                   </span>
                 </div>
                 
-                <p className="text-gray-600 mb-4">{matter.description}</p>
+                <p className="text-gray-600 mb-4">{matter.description || 'No description available'}</p>
                 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div className="flex items-center space-x-2">
                     <User className="h-4 w-4 text-gray-400" />
-                    <span className="text-gray-600">{matter.client}</span>
+                    <span className="text-gray-600">{matter.clientName}</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Briefcase className="h-4 w-4 text-gray-400" />
@@ -291,7 +253,7 @@ export function MattersPage() {
                 </div>
                 
                 <div className="mt-4 flex items-center space-x-4 text-sm text-gray-500">
-                  <span>Assigned to: {matter.assignedTo}</span>
+                  <span>Assigned to: {matter.assignedLawyer ? `${matter.assignedLawyer.firstName} ${matter.assignedLawyer.lastName}` : 'Unassigned'}</span>
                   <span>Created: {formatDate(matter.createdAt)}</span>
                 </div>
               </div>
