@@ -103,6 +103,34 @@ export default {
         "accent-purple": "#A855F7",
         "dark-navy": "#1A1D23",
         
+        // Legal/Counsel specific colors
+        legal: {
+          50: "#f0fdff",
+          100: "#ccfbf1", 
+          200: "#99f6e4",
+          300: "#5eead4",
+          400: "#2dd4bf",
+          500: "#14b8a6",
+          600: "#0d9488",
+          700: "#0f766e",
+          800: "#115e59",
+          900: "#134e4a",
+          950: "#042f2e",
+        },
+        counsel: {
+          50: "#f0fdff",
+          100: "#ccfbf1", 
+          200: "#99f6e4",
+          300: "#5eead4",
+          400: "#2dd4bf",
+          500: "#14b8a6",
+          600: "#0d9488",
+          700: "#0f766e",
+          800: "#115e59",
+          900: "#134e4a",
+          950: "#042f2e",
+        },
+        
         // Shadcn/ui compatibility
         card: {
           DEFAULT: "#FFFFFF",
@@ -155,6 +183,8 @@ export default {
         'gradient-purple': 'linear-gradient(135deg, #A855F7 0%, #9333ea 100%)',
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+        'gradient-text-white': 'linear-gradient(135deg, #ffffff 0%, #f0fdff 100%)',
+        'mesh-gradient': 'radial-gradient(at 27% 37%, hsla(215, 98%, 61%, 1) 0px, transparent 0%), radial-gradient(at 97% 21%, hsla(125, 98%, 72%, 1) 0px, transparent 50%), radial-gradient(at 52% 99%, hsla(354, 98%, 61%, 1) 0px, transparent 50%), radial-gradient(at 10% 29%, hsla(256, 96%, 67%, 1) 0px, transparent 50%), radial-gradient(at 97% 96%, hsla(38, 60%, 74%, 1) 0px, transparent 50%), radial-gradient(at 33% 50%, hsla(222, 67%, 73%, 1) 0px, transparent 50%), radial-gradient(at 79% 53%, hsla(343, 68%, 79%, 1) 0px, transparent 50%)',
       },
       boxShadow: {
         'soft': '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)',
@@ -162,6 +192,7 @@ export default {
         'elevated': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
         'lift': '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
         'floating': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+        'shadow-floating': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
         'counsel': '0 4px 6px -1px rgba(60, 123, 117, 0.1), 0 2px 4px -1px rgba(60, 123, 117, 0.06)',
         'counsel-lg': '0 10px 15px -3px rgba(60, 123, 117, 0.1), 0 4px 6px -2px rgba(60, 123, 117, 0.05)',
       },
@@ -178,6 +209,7 @@ export default {
         'bounce-subtle': 'bounceSubtle 2s infinite',
         'mobile-slide-up': 'mobileSlideUp 0.4s ease-out',
         'touch-feedback': 'touchFeedback 0.1s ease-out',
+        'pulse-legal': 'pulseLegal 2s ease-in-out infinite',
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
       },
@@ -233,6 +265,10 @@ export default {
           '0%': { transform: 'scale(1)' },
           '50%': { transform: 'scale(0.95)' },
           '100%': { transform: 'scale(1)' },
+        },
+        pulseLegal: {
+          '0%, 100%': { opacity: '1', transform: 'scale(1)' },
+          '50%': { opacity: '0.8', transform: 'scale(1.05)' },
         },
         "accordion-down": {
           from: { height: 0 },

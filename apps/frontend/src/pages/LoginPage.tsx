@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Scale, Eye, EyeOff, Loader2, Shield, Brain, BarChart3, FileText, Users, Clock } from 'lucide-react'
-import { useAuth } from '@/contexts/AuthContext'
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
+import { useAuth } from '../contexts/AuthContext'
+import { LoadingSpinner } from '../components/ui/LoadingSpinner'
 import { motion } from 'framer-motion'
 
 interface LoginFormData {

@@ -212,300 +212,233 @@ export function EntityManagementPage() {
   const totalValue = entities.reduce((sum, entity) => sum + entity.estimatedValue, 0)
 
   return (
-    <div className="px-4 lg:px-6 bg-gradient-to-br from-teal-50 to-white min-h-screen">
+    <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="mb-8">
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="flex items-center justify-between mb-6"
-        >
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-teal-700 to-cyan-600 bg-clip-text text-transparent">
-              Entity Management
-            </h1>
-            <p className="text-teal-600 mt-2 text-lg font-medium">
-              Manage corporate entities, compliance, and governance
-            </p>
-          </div>
-          <div className="flex items-center space-x-3">
-            <motion.button 
-              className="flex items-center space-x-2 px-4 py-2 bg-white/80 backdrop-blur-sm border border-teal-200 rounded-xl text-teal-700 font-semibold hover:bg-teal-50 transition-all duration-200"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <BarChart3 className="h-4 w-4" />
-              <span>Analytics</span>
-            </motion.button>
-            <motion.button 
-              className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-teal-600 to-cyan-600 text-white font-semibold rounded-xl shadow-lg hover:from-teal-700 hover:to-cyan-700 transition-all duration-200"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => setShowCreateModal(true)}
-            >
-              <Plus className="h-4 w-4" />
-              <span>New Entity</span>
-            </motion.button>
-          </div>
-        </motion.div>
-
-        {/* Analytics Cards */}
-        <motion.div 
-          className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.6 }}
-        >
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-teal-200/50 shadow-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold text-teal-600">Total Entities</p>
-                <p className="text-3xl font-bold text-teal-800">{totalEntities}</p>
-              </div>
-              <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl">
-                <Building2 className="h-6 w-6 text-white" />
-              </div>
-            </div>
-            <div className="mt-2 flex items-center text-sm">
-              <span className="text-teal-600 font-medium">Across all jurisdictions</span>
-            </div>
-          </div>
-
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-teal-200/50 shadow-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold text-teal-600">Active Entities</p>
-                <p className="text-3xl font-bold text-teal-800">{activeEntities}</p>
-              </div>
-              <div className="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-xl">
-                <CheckCircle className="h-6 w-6 text-white" />
-              </div>
-            </div>
-            <div className="mt-2 flex items-center text-sm">
-              <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
-              <span className="text-green-600 font-medium">+5%</span>
-              <span className="text-teal-500 ml-1">this quarter</span>
-            </div>
-          </div>
-
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-teal-200/50 shadow-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold text-teal-600">Total Value</p>
-                <p className="text-3xl font-bold text-teal-800">{formatCurrency(totalValue)}</p>
-              </div>
-              <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl">
-                <DollarSign className="h-6 w-6 text-white" />
-              </div>
-            </div>
-            <div className="mt-2 flex items-center text-sm">
-              <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
-              <span className="text-green-600 font-medium">+12%</span>
-              <span className="text-teal-500 ml-1">this year</span>
-            </div>
-          </div>
-
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-teal-200/50 shadow-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold text-teal-600">Overdue Filings</p>
-                <p className="text-3xl font-bold text-teal-800">{overdueFilings}</p>
-              </div>
-              <div className="p-3 bg-gradient-to-br from-red-500 to-red-600 rounded-xl">
-                <AlertTriangle className="h-6 w-6 text-white" />
-              </div>
-            </div>
-            <div className="mt-2 flex items-center text-sm">
-              <span className="text-red-600 font-medium">Immediate attention</span>
-            </div>
-          </div>
-        </motion.div>
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+        <div>
+          <h1 className="text-2xl font-bold text-navy-900">Entity Management</h1>
+          <p className="text-muted-600 mt-1">Manage corporate entities, compliance, and governance</p>
+        </div>
+        <div className="flex items-center space-x-3">
+          <Button variant="secondary" className="flex items-center space-x-2">
+            <BarChart3 className="h-4 w-4" />
+            <span>Analytics</span>
+          </Button>
+          <Button 
+            className="flex items-center space-x-2 bg-primary-600 hover:bg-primary-700"
+            onClick={() => setShowCreateModal(true)}
+          >
+            <Plus className="h-4 w-4" />
+            <span>New Entity</span>
+          </Button>
+        </div>
       </div>
 
-      {/* Search and Filters */}
-        <motion.div 
-          className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 mb-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.6 }}
-        >
-          <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 flex-1">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-teal-500" />
-              <input
-                type="text"
-                placeholder="Search entities, types, or jurisdictions..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-white/80 backdrop-blur-sm border border-teal-200 rounded-xl text-teal-900 placeholder-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
-              />
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-muted-600">Total Entities</p>
+              <p className="text-2xl font-bold text-navy-900">{totalEntities}</p>
             </div>
-            
-            <div className="flex items-center space-x-3">
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-4 py-2.5 bg-white/80 backdrop-blur-sm border border-teal-200 rounded-xl text-teal-700 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
-              >
-                <option value="all">All Status</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-                <option value="pending">Pending</option>
-                <option value="dissolved">Dissolved</option>
-              </select>
-              
-              <select
-                value={typeFilter}
-                onChange={(e) => setTypeFilter(e.target.value)}
-                className="px-4 py-2.5 bg-white/80 backdrop-blur-sm border border-teal-200 rounded-xl text-teal-700 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
-              >
-                <option value="all">All Types</option>
-                <option value="corporation">Corporation</option>
-                <option value="llc">LLC</option>
-                <option value="partnership">Partnership</option>
-                <option value="subsidiary">Subsidiary</option>
-                <option value="branch">Branch</option>
-                <option value="joint-venture">Joint Venture</option>
-              </select>
-
-              <select
-                value={jurisdictionFilter}
-                onChange={(e) => setJurisdictionFilter(e.target.value)}
-                className="px-4 py-2.5 bg-white/80 backdrop-blur-sm border border-teal-200 rounded-xl text-teal-700 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
-              >
-                <option value="all">All Jurisdictions</option>
-                <option value="Delaware">Delaware</option>
-                <option value="California">California</option>
-                <option value="New York">New York</option>
-                <option value="Texas">Texas</option>
-                <option value="United Kingdom">United Kingdom</option>
-              </select>
+            <div className="p-2 bg-primary-100 rounded-lg">
+              <Building2 className="h-5 w-5 text-primary-600" />
             </div>
           </div>
-        </motion.div>
+        </Card>
+        <Card className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-muted-600">Active Entities</p>
+              <p className="text-2xl font-bold text-navy-900">{activeEntities}</p>
+            </div>
+            <div className="p-2 bg-green-100 rounded-lg">
+              <CheckCircle className="h-5 w-5 text-green-600" />
+            </div>
+          </div>
+        </Card>
+        <Card className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-muted-600">Total Value</p>
+              <p className="text-2xl font-bold text-navy-900">{formatCurrency(totalValue)}</p>
+            </div>
+            <div className="p-2 bg-green-100 rounded-lg">
+              <DollarSign className="h-5 w-5 text-green-600" />
+            </div>
+          </div>
+        </Card>
+        <Card className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-muted-600">Overdue Filings</p>
+              <p className="text-2xl font-bold text-navy-900">{overdueFilings}</p>
+            </div>
+            <div className="p-2 bg-red-100 rounded-lg">
+              <AlertTriangle className="h-5 w-5 text-red-600" />
+            </div>
+          </div>
+        </Card>
+      </div>
 
-        {/* Entities Grid */}
-        <motion.div 
-          className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6, duration: 0.6 }}
-        >
-          {filteredEntities.map((entity, index) => (
-            <motion.div
-              key={entity.id}
-              className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-teal-200/50 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7 + index * 0.1, duration: 0.6 }}
-              whileHover={{ scale: 1.02 }}
-              onClick={() => setSelectedEntity(entity)}
+      {/* Filters */}
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 bg-white p-4 rounded-lg border border-light-300">
+        <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 flex-1">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-500" />
+            <Input
+              type="text"
+              placeholder="Search entities, types, or jurisdictions..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          
+          <div className="flex items-center space-x-3">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-3 py-2 border border-light-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             >
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <h3 className="text-lg font-bold text-teal-800 mb-1">{entity.name}</h3>
-                  <p className="text-sm text-teal-600 mb-2">{entity.jurisdiction}</p>
-                  <div className="flex items-center space-x-2">
-                    <Badge 
-                      variant={statusConfig[entity.status].color}
-                    >
-                      {entity.status.toUpperCase()}
-                    </Badge>
-                    <Badge 
-                      variant={filingStatusConfig[entity.filingStatus].color}
-                    >
-                      {entity.filingStatus.toUpperCase()}
-                    </Badge>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className={`p-2 rounded-lg bg-gradient-to-br ${
-                    entity.type === 'corporation' ? 'from-blue-500 to-blue-600' :
-                    entity.type === 'llc' ? 'from-purple-500 to-purple-600' :
-                    entity.type === 'partnership' ? 'from-green-500 to-green-600' :
-                    entity.type === 'subsidiary' ? 'from-orange-500 to-orange-600' :
-                    'from-gray-500 to-gray-600'
-                  }`}>
-                    <Building2 className="h-4 w-4 text-white" />
-                  </div>
-                  <button className="p-2 text-teal-600 hover:bg-teal-50 rounded-lg transition-colors">
-                    <MoreVertical className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="pending">Pending</option>
+              <option value="dissolved">Dissolved</option>
+            </select>
+            
+            <select
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value)}
+              className="px-3 py-2 border border-light-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            >
+              <option value="all">All Types</option>
+              <option value="corporation">Corporation</option>
+              <option value="llc">LLC</option>
+              <option value="partnership">Partnership</option>
+              <option value="subsidiary">Subsidiary</option>
+              <option value="branch">Branch</option>
+              <option value="joint-venture">Joint Venture</option>
+            </select>
 
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-teal-600">Type</span>
-                  <span className="text-sm font-medium text-teal-800 capitalize">{entity.type.replace('-', ' ')}</span>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-teal-600">Entity Number</span>
-                  <span className="text-sm font-medium text-teal-800">{entity.entityNumber}</span>
-                </div>
+            <select
+              value={jurisdictionFilter}
+              onChange={(e) => setJurisdictionFilter(e.target.value)}
+              className="px-3 py-2 border border-light-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            >
+              <option value="all">All Jurisdictions</option>
+              <option value="Delaware">Delaware</option>
+              <option value="California">California</option>
+              <option value="New York">New York</option>
+              <option value="Texas">Texas</option>
+              <option value="United Kingdom">United Kingdom</option>
+            </select>
+          </div>
+        </div>
+      </div>
 
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-teal-600">Compliance Score</span>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-16 h-2 bg-teal-100 rounded-full">
-                      <div 
-                        className={`h-2 rounded-full ${
-                          entity.complianceScore >= 90 ? 'bg-green-500' :
-                          entity.complianceScore >= 75 ? 'bg-yellow-500' :
-                          'bg-red-500'
-                        }`}
-                        style={{ width: `${entity.complianceScore}%` }}
-                      />
+      {/* Entities Table */}
+      <Card className="overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-muted-50 border-b border-light-200">
+              <tr>
+                <th className="text-left p-4 font-semibold text-navy-900">Entity</th>
+                <th className="text-left p-4 font-semibold text-navy-900">Type</th>
+                <th className="text-left p-4 font-semibold text-navy-900">Status</th>
+                <th className="text-left p-4 font-semibold text-navy-900">Filing Status</th>
+                <th className="text-left p-4 font-semibold text-navy-900">Compliance</th>
+                <th className="text-left p-4 font-semibold text-navy-900">Value</th>
+                <th className="text-left p-4 font-semibold text-navy-900">Next Filing</th>
+                <th className="text-left p-4 font-semibold text-navy-900">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredEntities.map((entity, index) => (
+                <motion.tr
+                  key={entity.id}
+                  className="border-b border-light-100 hover:bg-muted-25 transition-colors cursor-pointer"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  onClick={() => setSelectedEntity(entity)}
+                >
+                  <td className="p-4">
+                    <div>
+                      <h3 className="font-semibold text-navy-900">{entity.name}</h3>
+                      <p className="text-sm text-muted-600">{entity.jurisdiction}</p>
+                      <p className="text-xs text-muted-500 mt-1">Entity #{entity.entityNumber}</p>
                     </div>
-                    <span className="text-sm font-bold text-teal-800">{entity.complianceScore}%</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-teal-600">Estimated Value</span>
-                  <span className="text-sm font-bold text-teal-800">{formatCurrency(entity.estimatedValue)}</span>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-teal-600">Next Filing</span>
-                  <span className={`text-sm font-medium ${
-                    entity.filingStatus === 'overdue' ? 'text-red-600' : 'text-teal-800'
-                  }`}>
-                    {new Date(entity.nextFilingDue).toLocaleDateString()}
-                  </span>
-                </div>
-
-                {entity.riskLevel !== 'low' && (
-                  <div className="flex items-center space-x-2 mt-3 p-2 bg-red-50 rounded-lg border border-red-200">
-                    <AlertTriangle className="h-4 w-4 text-red-500" />
-                    <span className="text-sm text-red-700 font-medium">
-                      {entity.riskLevel.toUpperCase()} RISK
-                    </span>
-                  </div>
-                )}
-
-                {entity.aiInsights.length > 0 && (
-                  <div className="mt-3 p-3 bg-gradient-to-r from-teal-50 to-cyan-50 rounded-lg border border-teal-200">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <Brain className="h-4 w-4 text-teal-600" />
-                      <span className="text-sm font-semibold text-teal-700">AI Insights</span>
+                  </td>
+                  <td className="p-4">
+                    <div className="flex items-center space-x-2">
+                      <Building2 className="h-4 w-4 text-muted-500" />
+                      <span className="capitalize text-navy-900">{entity.type.replace('-', ' ')}</span>
                     </div>
-                    <ul className="space-y-1">
-                      {entity.aiInsights.slice(0, 2).map((insight, idx) => (
-                        <li key={idx} className="text-xs text-teal-600 flex items-start">
-                          <span className="w-1 h-1 bg-teal-400 rounded-full mt-1.5 mr-2 flex-shrink-0" />
-                          {insight}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
+                  </td>
+                  <td className="p-4">
+                    <Badge variant={statusConfig[entity.status].color}>
+                      <div className="flex items-center space-x-1">
+                        {getStatusIcon(entity.status)}
+                        <span className="capitalize">{entity.status}</span>
+                      </div>
+                    </Badge>
+                  </td>
+                  <td className="p-4">
+                    <Badge variant={filingStatusConfig[entity.filingStatus].color}>
+                      <div className="flex items-center space-x-1">
+                        {getFilingStatusIcon(entity.filingStatus)}
+                        <span className="capitalize">{entity.filingStatus}</span>
+                      </div>
+                    </Badge>
+                  </td>
+                  <td className="p-4">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-16 bg-light-200 rounded-full h-2">
+                        <div 
+                          className={`h-2 rounded-full ${
+                            entity.complianceScore >= 90 ? 'bg-green-500' :
+                            entity.complianceScore >= 70 ? 'bg-yellow-500' : 'bg-red-500'
+                          }`}
+                          style={{ width: `${entity.complianceScore}%` }}
+                        />
+                      </div>
+                      <span className="text-sm font-medium text-navy-900">{entity.complianceScore}%</span>
+                    </div>
+                  </td>
+                  <td className="p-4">
+                    <div>
+                      <p className="font-semibold text-navy-900">{formatCurrency(entity.estimatedValue)}</p>
+                      <p className="text-xs text-muted-500">{entity.subsidiaries} subsidiaries</p>
+                    </div>
+                  </td>
+                  <td className="p-4">
+                    <div>
+                      <p className="text-sm text-navy-900">{formatDate(entity.nextFilingDue)}</p>
+                      <p className="text-xs text-muted-500">Annual: {entity.annualReportStatus}</p>
+                    </div>
+                  </td>
+                  <td className="p-4">
+                    <div className="flex items-center space-x-2">
+                      <Button variant="secondary" size="sm" className="p-2">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button variant="secondary" size="sm" className="p-2">
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button variant="secondary" size="sm" className="p-2">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </td>
+                </motion.tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
 
       {/* Entity Detail Modal */}
       {selectedEntity && (
@@ -518,48 +451,48 @@ export function EntityManagementPage() {
           <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold text-teal-600 mb-1">Type</label>
-                <p className="text-teal-800 font-semibold capitalize">{selectedEntity.type.replace('-', ' ')}</p>
+                <label className="block text-sm font-medium text-muted-600 mb-1">Type</label>
+                <p className="text-navy-900 font-semibold capitalize">{selectedEntity.type.replace('-', ' ')}</p>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-teal-600 mb-1">Status</label>
+                <label className="block text-sm font-medium text-muted-600 mb-1">Status</label>
                 <Badge variant={statusConfig[selectedEntity.status].color}>
                   {selectedEntity.status.charAt(0).toUpperCase() + selectedEntity.status.slice(1)}
                 </Badge>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-teal-600 mb-1">Jurisdiction</label>
-                <p className="text-teal-800">{selectedEntity.jurisdiction}</p>
+                <label className="block text-sm font-medium text-muted-600 mb-1">Jurisdiction</label>
+                <p className="text-navy-900">{selectedEntity.jurisdiction}</p>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-teal-600 mb-1">Entity Number</label>
-                <p className="text-teal-800">{selectedEntity.entityNumber}</p>
+                <label className="block text-sm font-medium text-muted-600 mb-1">Entity Number</label>
+                <p className="text-navy-900">{selectedEntity.entityNumber}</p>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-teal-600 mb-1">Incorporation Date</label>
-                <p className="text-teal-800">{formatDate(selectedEntity.incorporationDate)}</p>
+                <label className="block text-sm font-medium text-muted-600 mb-1">Incorporation Date</label>
+                <p className="text-navy-900">{formatDate(selectedEntity.incorporationDate)}</p>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-teal-600 mb-1">Tax ID</label>
-                <p className="text-teal-800">{selectedEntity.taxId}</p>
+                <label className="block text-sm font-medium text-muted-600 mb-1">Tax ID</label>
+                <p className="text-navy-900">{selectedEntity.taxId}</p>
               </div>
             </div>
             
             <div>
-              <label className="block text-sm font-semibold text-teal-600 mb-1">Business Address</label>
-              <p className="text-teal-800">{selectedEntity.businessAddress}</p>
+              <label className="block text-sm font-medium text-muted-600 mb-1">Business Address</label>
+              <p className="text-navy-900">{selectedEntity.businessAddress}</p>
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-teal-600 mb-1">Registered Agent</label>
-              <p className="text-teal-800">{selectedEntity.registeredAgent}</p>
+              <label className="block text-sm font-medium text-muted-600 mb-1">Registered Agent</label>
+              <p className="text-navy-900">{selectedEntity.registeredAgent}</p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold text-teal-600 mb-1">Compliance Score</label>
+                <label className="block text-sm font-medium text-muted-600 mb-1">Compliance Score</label>
                 <div className="flex items-center space-x-2">
-                  <div className="w-24 bg-teal-100 rounded-full h-3">
+                  <div className="w-24 bg-light-200 rounded-full h-3">
                     <div 
                       className={`h-3 rounded-full ${
                         selectedEntity.complianceScore >= 90 ? 'bg-green-500' :
@@ -568,11 +501,11 @@ export function EntityManagementPage() {
                       style={{ width: `${selectedEntity.complianceScore}%` }}
                     />
                   </div>
-                  <span className="text-sm font-bold text-teal-800">{selectedEntity.complianceScore}%</span>
+                  <span className="text-sm font-medium text-navy-900">{selectedEntity.complianceScore}%</span>
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-teal-600 mb-1">Risk Level</label>
+                <label className="block text-sm font-medium text-muted-600 mb-1">Risk Level</label>
                 <Badge variant={riskConfig[selectedEntity.riskLevel].color}>
                   {selectedEntity.riskLevel.charAt(0).toUpperCase() + selectedEntity.riskLevel.slice(1)}
                 </Badge>
@@ -581,12 +514,12 @@ export function EntityManagementPage() {
 
             {selectedEntity.aiInsights.length > 0 && (
               <div>
-                <label className="block text-sm font-semibold text-teal-600 mb-2">AI Insights</label>
+                <label className="block text-sm font-medium text-muted-600 mb-2">AI Insights</label>
                 <div className="space-y-2">
                   {selectedEntity.aiInsights.map((insight, index) => (
-                    <div key={index} className="flex items-start space-x-2 p-3 bg-gradient-to-r from-teal-50 to-cyan-50 rounded-lg border border-teal-200">
-                      <Brain className="h-4 w-4 text-teal-600 mt-0.5 flex-shrink-0" />
-                      <p className="text-sm text-teal-800">{insight}</p>
+                    <div key={index} className="flex items-start space-x-2 p-2 bg-muted-50 rounded-lg">
+                      <Brain className="h-4 w-4 text-primary-600 mt-0.5 flex-shrink-0" />
+                      <p className="text-sm text-navy-900">{insight}</p>
                     </div>
                   ))}
                 </div>
@@ -594,27 +527,9 @@ export function EntityManagementPage() {
             )}
 
             <div className="flex space-x-3 pt-4">
-              <motion.button 
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-teal-600 to-cyan-600 text-white font-semibold rounded-xl shadow-lg hover:from-teal-700 hover:to-cyan-700 transition-all duration-200"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                Edit Entity
-              </motion.button>
-              <motion.button 
-                className="px-6 py-3 bg-white/80 backdrop-blur-sm border border-teal-200 rounded-xl text-teal-700 font-semibold hover:bg-teal-50 transition-all duration-200"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                Generate Report
-              </motion.button>
-              <motion.button 
-                className="px-6 py-3 bg-white/80 backdrop-blur-sm border border-teal-200 rounded-xl text-teal-700 font-semibold hover:bg-teal-50 transition-all duration-200"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                File Documents
-              </motion.button>
+              <Button className="flex-1">Edit Entity</Button>
+              <Button variant="secondary">Generate Report</Button>
+              <Button variant="secondary">File Documents</Button>
             </div>
           </div>
         </Modal>
@@ -631,15 +546,12 @@ export function EntityManagementPage() {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold text-teal-600 mb-1">Entity Name</label>
-                <input 
-                  className="w-full px-4 py-2.5 bg-white/80 backdrop-blur-sm border border-teal-200 rounded-xl text-teal-900 placeholder-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
-                  placeholder="Enter entity name" 
-                />
+                <label className="block text-sm font-medium text-muted-600 mb-1">Entity Name</label>
+                <Input placeholder="Enter entity name" />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-teal-600 mb-1">Type</label>
-                <select className="w-full px-4 py-2.5 bg-white/80 backdrop-blur-sm border border-teal-200 rounded-xl text-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200">
+                <label className="block text-sm font-medium text-muted-600 mb-1">Type</label>
+                <select className="w-full px-3 py-2 border border-light-300 rounded-lg">
                   <option value="corporation">Corporation</option>
                   <option value="llc">LLC</option>
                   <option value="partnership">Partnership</option>
@@ -649,46 +561,26 @@ export function EntityManagementPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-teal-600 mb-1">Jurisdiction</label>
-                <input 
-                  className="w-full px-4 py-2.5 bg-white/80 backdrop-blur-sm border border-teal-200 rounded-xl text-teal-900 placeholder-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
-                  placeholder="Enter jurisdiction" 
-                />
+                <label className="block text-sm font-medium text-muted-600 mb-1">Jurisdiction</label>
+                <Input placeholder="Enter jurisdiction" />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-teal-600 mb-1">Estimated Value</label>
-                <input 
-                  type="number"
-                  className="w-full px-4 py-2.5 bg-white/80 backdrop-blur-sm border border-teal-200 rounded-xl text-teal-900 placeholder-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
-                  placeholder="0" 
-                />
+                <label className="block text-sm font-medium text-muted-600 mb-1">Estimated Value</label>
+                <Input type="number" placeholder="0" />
               </div>
             </div>
             
             <div>
-              <label className="block text-sm font-semibold text-teal-600 mb-1">Business Address</label>
+              <label className="block text-sm font-medium text-muted-600 mb-1">Business Address</label>
               <textarea 
-                className="w-full px-4 py-2.5 bg-white/80 backdrop-blur-sm border border-teal-200 rounded-xl text-teal-900 placeholder-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 h-20 resize-none"
+                className="w-full px-3 py-2 border border-light-300 rounded-lg h-20 resize-none"
                 placeholder="Enter business address..."
               />
             </div>
 
             <div className="flex space-x-3 pt-4">
-              <motion.button 
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-teal-600 to-cyan-600 text-white font-semibold rounded-xl shadow-lg hover:from-teal-700 hover:to-cyan-700 transition-all duration-200"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                Create Entity
-              </motion.button>
-              <motion.button 
-                className="px-6 py-3 bg-white/80 backdrop-blur-sm border border-teal-200 rounded-xl text-teal-700 font-semibold hover:bg-teal-50 transition-all duration-200"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setShowCreateModal(false)}
-              >
-                Cancel
-              </motion.button>
+              <Button className="flex-1">Create Entity</Button>
+              <Button variant="secondary" onClick={() => setShowCreateModal(false)}>Cancel</Button>
             </div>
           </div>
         </Modal>

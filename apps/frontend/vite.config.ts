@@ -23,12 +23,15 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom', 'react-router-dom'],
           ui: ['lucide-react', '@headlessui/react', 'framer-motion'],
           utils: ['axios', 'react-query', 'react-hook-form', 'dayjs'],
+          charts: ['recharts'],
+          openai: ['openai'],
         },
       },
     },

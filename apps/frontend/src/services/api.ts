@@ -106,6 +106,33 @@ export const contractsApi = {
   delete: (id: string) => api.delete(`/contracts/${id}`),
 }
 
+// Cases API
+export const casesApi = {
+  getAll: (params?: { page?: number; limit?: number; search?: string; status?: string; type?: string }) =>
+    api.get('/cases', { params }),
+  getById: (id: string) => api.get(`/cases/${id}`),
+  create: (data: any) => api.post('/cases', data),
+  update: (id: string, data: any) => api.put(`/cases/${id}`, data),
+  delete: (id: string) => api.delete(`/cases/${id}`),
+  uploadDocument: (caseId: string, formData: FormData) =>
+    api.post(`/cases/${caseId}/documents`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    }),
+  getDocuments: (caseId: string) => api.get(`/cases/${caseId}/documents`),
+  deleteDocument: (caseId: string, documentId: string) =>
+    api.delete(`/cases/${caseId}/documents/${documentId}`),
+  analyzeCase: (caseId: string, analysisType: string, data?: any) =>
+    api.post(`/cases/${caseId}/analyze`, { analysisType, ...data }),
+  getAnalyses: (caseId: string) => api.get(`/cases/${caseId}/analyses`),
+  getAnalysis: (caseId: string, analysisId: string) =>
+    api.get(`/cases/${caseId}/analyses/${analysisId}`),
+  bulkAnalyze: (caseIds: string[], analysisType: string) =>
+    api.post('/cases/bulk/analyze', { caseIds, analysisType }),
+  getStatsSummary: () => api.get('/cases/stats/summary'),
+  exportCase: (caseId: string, format?: string) =>
+    api.get(`/cases/${caseId}/export`, { params: { format } }),
+}
+
 // AI API
 export const aiApi = {
   chat: (message: string, context?: string) =>
