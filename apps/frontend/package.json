@@ -11,6 +11,7 @@
     "test": "vitest"
   },
   "dependencies": {
+    "@babel/runtime": "^7.27.6",
     "@headlessui/react": "^1.7.17",
     "axios": "^1.6.2",
     "clsx": "^2.1.1",
