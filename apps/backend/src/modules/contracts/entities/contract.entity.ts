@@ -13,13 +13,13 @@ export class Contract {
   @Column({ type: 'text', nullable: true })
   description: string;
 
-  @Column({ type: 'enum', enum: ['employment', 'service', 'nda', 'partnership', 'licensing', 'real_estate', 'vendor', 'other'], default: 'other' })
+  @Column({ type: 'text', default: 'other' })
   type: string;
 
-  @Column({ type: 'enum', enum: ['draft', 'review', 'negotiation', 'executed', 'expired', 'terminated'], default: 'draft' })
+  @Column({ type: 'text', default: 'draft' })
   status: string;
 
-  @Column({ type: 'enum', enum: ['low', 'medium', 'high', 'critical'], default: 'medium' })
+  @Column({ type: 'text', default: 'medium' })
   priority: string;
 
   @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true })
@@ -43,17 +43,17 @@ export class Contract {
   @Column({ type: 'text', nullable: true })
   terms: string;
 
-  @Column({ type: 'jsonb', nullable: true })
-  parties: any[];
+  @Column({ type: 'text', nullable: true })
+  parties: string;
 
-  @Column({ type: 'jsonb', nullable: true })
-  keyTerms: any;
+  @Column({ type: 'text', nullable: true })
+  keyTerms: string;
 
-  @Column({ type: 'jsonb', nullable: true })
-  riskAssessment: any;
+  @Column({ type: 'text', nullable: true })
+  riskAssessment: string;
 
-  @Column({ type: 'jsonb', nullable: true })
-  tags: string[];
+  @Column({ type: 'text', nullable: true })
+  tags: string;
 
   @Column({ nullable: true })
   documentPath: string;

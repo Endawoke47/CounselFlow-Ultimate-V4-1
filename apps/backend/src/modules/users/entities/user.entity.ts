@@ -37,7 +37,7 @@ export class User {
   @Column({ default: true })
   isActive: boolean;
 
-  @Column({ type: 'enum', enum: ['admin', 'partner', 'associate', 'paralegal', 'client'], default: 'associate' })
+  @Column({ type: 'text', default: 'associate' })
   role: string;
 
   @Column({ nullable: true })
@@ -46,8 +46,8 @@ export class User {
   @Column({ nullable: true })
   phone: string;
 
-  @Column({ type: 'jsonb', nullable: true })
-  preferences: any;
+  @Column({ type: 'text', nullable: true })
+  preferences: string;
 
   @CreateDateColumn()
   createdAt: Date;

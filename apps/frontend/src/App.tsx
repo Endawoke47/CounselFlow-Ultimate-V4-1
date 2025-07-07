@@ -10,6 +10,15 @@ import { ClientsPage } from './pages/ClientsPage'
 import { AIChatPage } from './pages/AIChatPage'
 import { DocumentsPage } from './pages/DocumentsPage'
 import { SettingsPage } from './pages/SettingsPage'
+import { ComponentShowcase } from './pages/ComponentShowcase'
+import { IPManagementPage } from './pages/IPManagementPage'
+import { CompliancePage } from './pages/CompliancePage'
+import { PrivacyPage } from './pages/PrivacyPage'
+import { DisputesPage } from './pages/DisputesPage'
+import { SpendAnalyticsPage } from './pages/SpendAnalyticsPage'
+import { IntakePage } from './pages/IntakePage'
+import { EntityManagementPage } from './pages/EntityManagementPage'
+import { KnowledgeManagementPage } from './pages/KnowledgeManagementPage'
 import { LoadingSpinner } from './components/ui/LoadingSpinner'
 
 export function App() {
@@ -42,7 +51,16 @@ export function App() {
         <Route path="/clients" element={<ClientsPage />} />
         <Route path="/ai" element={<AIChatPage />} />
         <Route path="/documents" element={<DocumentsPage />} />
+        <Route path="/ip-management" element={<IPManagementPage />} />
+        <Route path="/compliance" element={<CompliancePage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/disputes" element={<DisputesPage />} />
+        <Route path="/spend-analytics" element={<SpendAnalyticsPage />} />
+        <Route path="/intake" element={<IntakePage />} />
+        <Route path="/entity-management" element={<EntityManagementPage />} />
+        <Route path="/knowledge" element={<KnowledgeManagementPage />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/showcase" element={<ComponentShowcase />} />
         <Route path="/login" element={<Navigate to="/dashboard" replace />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>

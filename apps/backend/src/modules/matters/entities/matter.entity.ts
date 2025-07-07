@@ -18,13 +18,13 @@ export class Matter {
   @Column({ nullable: true })
   clientId: string;
 
-  @Column({ type: 'enum', enum: ['litigation', 'corporate', 'employment', 'intellectual_property', 'real_estate', 'criminal', 'family', 'immigration', 'other'], default: 'other' })
+  @Column({ type: 'text', default: 'other' })
   type: string;
 
-  @Column({ type: 'enum', enum: ['active', 'pending', 'closed', 'on_hold'], default: 'pending' })
+  @Column({ type: 'text', default: 'pending' })
   status: string;
 
-  @Column({ type: 'enum', enum: ['low', 'medium', 'high', 'critical'], default: 'medium' })
+  @Column({ type: 'text', default: 'medium' })
   priority: string;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
@@ -39,11 +39,11 @@ export class Matter {
   @Column({ nullable: true })
   dueDate: Date;
 
-  @Column({ type: 'jsonb', nullable: true })
-  tags: string[];
+  @Column({ type: 'text', nullable: true })
+  tags: string;
 
-  @Column({ type: 'jsonb', nullable: true })
-  customFields: any;
+  @Column({ type: 'text', nullable: true })
+  customFields: string;
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'assignedLawyerId' })

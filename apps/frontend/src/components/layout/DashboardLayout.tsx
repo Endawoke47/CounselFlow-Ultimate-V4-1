@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { 
   Scale, 
@@ -13,10 +13,22 @@ import {
   LogOut,
   Bell,
   Search,
-  User
+  User,
+  Shield,
+  Building,
+  Archive,
+  Brain,
+  TrendingUp,
+  Gavel,
+  Inbox,
+  Database,
+  Plus,
+  Grid3X3,
+  ChevronDown
 } from 'lucide-react'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth } from '../../contexts/AuthContext'
 import { motion, AnimatePresence } from 'framer-motion'
+import { SimpleSignOut } from '../SimpleSignOut'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -25,27 +37,84 @@ interface DashboardLayoutProps {
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
+  const [showSidebarUserMenu, setShowSidebarUserMenu] = useState(false)
+  const [showNotifications, setShowNotifications] = useState(false)
+  const [showQuickActions, setShowQuickActions] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
   const { user, logout } = useAuth()
+
+  console.log('DashboardLayout rendered, user:', user)
+
+  // Close dropdowns when clicking outside
+  const handleClickOutside = (event: MouseEvent) => {
+    const target = event.target as Element
+    if (!target.closest('.user-menu-container')) {
+      setShowUserMenu(false)
+    }
+    if (!target.closest('.sidebar-user-menu-container')) {
+      setShowSidebarUserMenu(false)
+    }
+    if (!target.closest('.notifications-container')) {
+      setShowNotifications(false)
+    }
+    if (!target.closest('.quick-actions-container')) {
+      setShowQuickActions(false)
+    }
+  }
+
+  React.useEffect(() => {
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
     { name: 'Matters', href: '/matters', icon: Briefcase },
     { name: 'Contracts', href: '/contracts', icon: FileText },
     { name: 'Clients', href: '/clients', icon: Users },
-    { name: 'AI Assistant', href: '/ai-assistant', icon: MessageSquare },
+    { name: 'Documents', href: '/documents', icon: Archive },
+    { name: 'AI Assistant', href: '/ai', icon: MessageSquare },
+    { name: 'Legal Intake', href: '/intake', icon: Inbox },
+    { name: 'IP Management', href: '/ip-management', icon: Shield },
+    { name: 'Entity Management', href: '/entity-management', icon: Building },
+    { name: 'Compliance', href: '/compliance', icon: Scale },
+    { name: 'Privacy & Data', href: '/privacy', icon: Shield },
+    { name: 'Disputes', href: '/disputes', icon: Gavel },
+    { name: 'Spend Analytics', href: '/spend-analytics', icon: TrendingUp },
+    { name: 'Knowledge Base', href: '/knowledge', icon: Database },
     { name: 'Settings', href: '/settings', icon: Settings },
   ]
 
+  const quickActions = [
+    { name: 'New Client', action: () => navigate('/clients'), icon: Users },
+    { name: 'New Matter', action: () => navigate('/matters'), icon: Briefcase },
+    { name: 'New Contract', action: () => navigate('/contracts'), icon: FileText },
+    { name: 'AI Assist', action: () => navigate('/ai'), icon: Brain },
+  ]
+
+  const notifications = [
+    { id: 1, title: 'Contract Review Due', message: 'TechCorp Agreement expires in 3 days', type: 'warning', time: '2h ago' },
+    { id: 2, title: 'New Client Inquiry', message: 'StartupCo requesting consultation', type: 'info', time: '4h ago' },
+    { id: 3, title: 'Payment Received', message: '$15,000 payment processed', type: 'success', time: '6h ago' },
+  ]
+
   const handleLogout = async () => {
-    await logout()
-    navigate('/login')
+    console.log('Logout button clicked')
+    try {
+      await logout()
+      console.log('Logout completed, navigating to login')
+      navigate('/login')
+    } catch (error) {
+      console.error('Logout error:', error)
+    }
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Mobile sidebar */}
+    <div className="min-h-screen bg-light-gray">
+      {/* Mobile sidebar overlay */}
       <AnimatePresence>
         {sidebarOpen && (
           <>
@@ -61,21 +130,21 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               animate={{ x: 0 }}
               exit={{ x: -280 }}
               transition={{ type: 'tween', duration: 0.3 }}
-              className="fixed inset-y-0 left-0 z-50 w-72 bg-white shadow-xl lg:hidden"
+              className="fixed inset-y-0 left-0 z-50 w-72 bg-primary shadow-counsel-lg lg:hidden"
             >
-              <div className="flex items-center justify-between px-4 py-6 border-b">
+              <div className="flex items-center justify-between px-gutter py-6 border-b border-white/20">
                 <div className="flex items-center space-x-2">
-                  <Scale className="h-8 w-8 text-teal-600" />
-                  <span className="text-xl font-bold text-gray-900">CounselFlow</span>
+                  <Scale className="h-8 w-8 text-white" />
+                  <span className="text-xl font-bold text-white">CounselFlow</span>
                 </div>
                 <button
                   onClick={() => setSidebarOpen(false)}
-                  className="p-2 rounded-lg hover:bg-gray-100"
+                  className="p-2 rounded-lg hover:bg-white/10 text-white transition-all duration-200"
                 >
                   <X className="h-6 w-6" />
                 </button>
               </div>
-              <nav className="px-4 py-4">
+              <nav className="px-4 py-4 space-y-1">
                 {navigation.map((item) => {
                   const Icon = item.icon
                   const isActive = location.pathname === item.href
@@ -84,10 +153,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                       key={item.name}
                       to={item.href}
                       onClick={() => setSidebarOpen(false)}
-                      className={`flex items-center space-x-3 px-3 py-2 rounded-lg mb-1 transition-colors ${
+                      className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-200 ${
                         isActive
-                          ? 'bg-teal-50 text-teal-600'
-                          : 'text-gray-700 hover:bg-gray-100'
+                          ? 'bg-white/20 text-white shadow-soft'
+                          : 'text-white/80 hover:bg-white/10 hover:text-white'
                       }`}
                     >
                       <Icon className="h-5 w-5" />
@@ -96,19 +165,73 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                   )
                 })}
               </nav>
+
+              {/* WORKING Mobile Sidebar User Profile Section */}
+              <div className="px-4 pb-4 mt-auto">
+                <div className="relative">
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      console.log('🟢 MOBILE SIDEBAR USER MENU CLICKED!')
+                      setShowSidebarUserMenu(!showSidebarUserMenu)
+                    }}
+                    className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-white hover:bg-white hover:bg-opacity-10 transition-colors"
+                    style={{ zIndex: 1000 }}
+                  >
+                    <div className="h-10 w-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                      <User className="h-5 w-5 text-white" />
+                    </div>
+                    <div className="flex-1 text-left">
+                      <div className="text-sm font-medium text-white">
+                        {user ? `${user.firstName} ${user.lastName}` : 'John Doe'}
+                      </div>
+                      <div className="text-xs text-white text-opacity-60">
+                        {user?.title || 'Senior Partner'}
+                      </div>
+                    </div>
+                    <ChevronDown className={`h-4 w-4 text-white text-opacity-60 transition-transform ${
+                      showSidebarUserMenu ? 'rotate-180' : ''
+                    }`} />
+                  </button>
+
+                  {showSidebarUserMenu && (
+                    <div 
+                      className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2"
+                      style={{ zIndex: 1001 }}
+                    >
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          console.log('🟢 MOBILE SIDEBAR LOGOUT CLICKED!')
+                          alert('Mobile sidebar logout working!')
+                          handleLogout()
+                          setSidebarOpen(false)
+                          setShowSidebarUserMenu(false)
+                        }}
+                        className="flex items-center w-full px-4 py-3 text-sm text-red-600 hover:bg-gray-100 transition-colors"
+                      >
+                        <LogOut className="h-4 w-4 mr-3" />
+                        Sign Out
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
             </motion.div>
           </>
         )}
       </AnimatePresence>
 
-      {/* Desktop sidebar */}
+      {/* Desktop sidebar - Fixed with CounselFlow primary teal background */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-72 lg:flex-col">
-        <div className="flex flex-col flex-grow bg-white border-r border-gray-200 pt-5">
-          <div className="flex items-center flex-shrink-0 px-6">
-            <Scale className="h-8 w-8 text-teal-600" />
-            <span className="ml-2 text-xl font-bold text-gray-900">CounselFlow</span>
+        <div className="flex flex-col flex-grow bg-primary border-r border-primary shadow-counsel-lg">
+          <div className="flex items-center flex-shrink-0 px-gutter py-6">
+            <Scale className="h-8 w-8 text-white" />
+            <span className="ml-2 text-xl font-bold text-white">CounselFlow</span>
           </div>
-          <div className="mt-8 flex-1 flex flex-col">
+          <div className="mt-4 flex-1 flex flex-col overflow-y-auto">
             <nav className="flex-1 px-4 space-y-1">
               {navigation.map((item) => {
                 const Icon = item.icon
@@ -117,94 +240,319 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                   <Link
                     key={item.name}
                     to={item.href}
-                    className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
+                    className={`group flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-200 ${
                       isActive
-                        ? 'bg-teal-50 text-teal-600'
-                        : 'text-gray-700 hover:bg-gray-100'
+                        ? 'bg-white/20 text-white shadow-soft'
+                        : 'text-white/80 hover:bg-white/10 hover:text-white hover:scale-105'
                     }`}
                   >
-                    <Icon className="h-5 w-5" />
+                    <Icon className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
                     <span className="font-medium">{item.name}</span>
                   </Link>
                 )
               })}
             </nav>
+            
+            {/* WORKING Sidebar User Profile Section */}
+            <div className="px-4 pb-4 mt-auto">
+              <div className="relative">
+                <button
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    console.log('🟢 SIDEBAR USER MENU CLICKED!')
+                    setShowSidebarUserMenu(!showSidebarUserMenu)
+                  }}
+                  className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-white hover:bg-white hover:bg-opacity-10 transition-colors"
+                  style={{ zIndex: 1000 }}
+                >
+                  <div className="h-10 w-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                    <User className="h-5 w-5 text-white" />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <div className="text-sm font-medium text-white">
+                      {user ? `${user.firstName} ${user.lastName}` : 'John Doe'}
+                    </div>
+                    <div className="text-xs text-white text-opacity-60">
+                      {user?.title || 'Senior Partner'}
+                    </div>
+                  </div>
+                  <ChevronDown className={`h-4 w-4 text-white text-opacity-60 transition-transform ${
+                    showSidebarUserMenu ? 'rotate-180' : ''
+                  }`} />
+                </button>
+
+                {showSidebarUserMenu && (
+                  <div 
+                    className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2"
+                    style={{ zIndex: 1001 }}
+                  >
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        console.log('🟢 SIDEBAR LOGOUT CLICKED!')
+                        alert('Sidebar logout working!')
+                        handleLogout()
+                        setShowSidebarUserMenu(false)
+                      }}
+                      className="flex items-center w-full px-4 py-3 text-sm text-red-600 hover:bg-gray-100 transition-colors"
+                    >
+                      <LogOut className="h-4 w-4 mr-3" />
+                      Sign Out
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="lg:pl-72">
-        {/* Top header */}
-        <header className="bg-white border-b border-gray-200 px-4 lg:px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
+        {/* Enhanced Topbar - Clean white background with professional spacing */}
+        <header className="bg-soft-white border-b border-muted-gray px-4 lg:px-gutter py-4 shadow-soft sticky top-0 z-30">
+          <div className="flex items-center justify-between max-w-app mx-auto">
+            <div className="flex items-center space-x-4">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="p-2 rounded-lg hover:bg-gray-100 lg:hidden"
+                className="p-2 rounded-lg hover:bg-light-gray lg:hidden transition-all duration-200 hover:scale-105"
               >
-                <Menu className="h-6 w-6" />
+                <Menu className="h-6 w-6 text-dark-navy" />
               </button>
+              
+              {/* Enhanced Search Bar */}
               <div className="ml-4 lg:ml-0">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-gray" />
                   <input
                     type="text"
                     placeholder="Search matters, contracts, clients..."
-                    className="pl-10 pr-4 py-2 w-64 lg:w-96 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    className="pl-10 pr-4 py-3 w-64 lg:w-96 border border-muted-gray rounded-lg bg-light-gray focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 text-dark-navy placeholder-muted-gray"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center space-x-4">
-              <button className="p-2 rounded-lg hover:bg-gray-100 relative">
-                <Bell className="h-6 w-6 text-gray-600" />
-                <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full"></span>
-              </button>
-
-              <div className="relative">
-                <button
-                  onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100"
+            <div className="flex items-center space-x-3">
+              {/* Quick Actions Speed Dial */}
+              <div className="relative quick-actions-container">
+                <motion.button
+                  onClick={() => setShowQuickActions(!showQuickActions)}
+                  className="p-2 rounded-lg hover:bg-light-gray relative transition-all duration-200 hover:scale-105"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  <div className="h-8 w-8 bg-teal-600 rounded-full flex items-center justify-center">
+                  <Plus className="h-6 w-6 text-primary" />
+                </motion.button>
+
+                <AnimatePresence>
+                  {showQuickActions && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                      className="absolute right-0 mt-2 w-48 bg-soft-white rounded-lg shadow-counsel-lg border border-muted-gray py-2 z-50"
+                    >
+                      {quickActions.map((action) => {
+                        const Icon = action.icon
+                        return (
+                          <button
+                            key={action.name}
+                            onClick={() => {
+                              action.action()
+                              setShowQuickActions(false)
+                            }}
+                            className="flex items-center w-full px-4 py-3 text-sm text-dark-navy hover:bg-light-gray transition-all duration-200"
+                          >
+                            <Icon className="h-4 w-4 mr-3 text-primary" />
+                            {action.name}
+                          </button>
+                        )
+                      })}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Enhanced Notification Bell */}
+              <div className="relative notifications-container">
+                <motion.button
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className="p-2 rounded-lg hover:bg-light-gray relative transition-all duration-200 hover:scale-105"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Bell className="h-6 w-6 text-dark-navy" />
+                  <motion.span 
+                    className="absolute -top-1 -right-1 h-3 w-3 bg-danger rounded-full"
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  />
+                </motion.button>
+
+                <AnimatePresence>
+                  {showNotifications && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                      className="absolute right-0 mt-2 w-80 bg-soft-white rounded-lg shadow-counsel-lg border border-muted-gray py-2 z-50"
+                    >
+                      <div className="px-4 py-3 border-b border-muted-gray">
+                        <h3 className="text-sm font-semibold text-dark-navy">Notifications</h3>
+                      </div>
+                      <div className="max-h-64 overflow-y-auto">
+                        {notifications.map((notification) => (
+                          <div key={notification.id} className="px-4 py-3 hover:bg-light-gray transition-colors">
+                            <div className="flex items-start space-x-3">
+                              <div className={`w-2 h-2 rounded-full mt-2 ${
+                                notification.type === 'warning' ? 'bg-warning' :
+                                notification.type === 'success' ? 'bg-success' : 'bg-info'
+                              }`} />
+                              <div className="flex-1">
+                                <p className="text-sm font-medium text-dark-navy">{notification.title}</p>
+                                <p className="text-xs text-muted-gray mt-1">{notification.message}</p>
+                                <p className="text-xs text-muted-gray mt-1">{notification.time}</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* ULTRA SIMPLE TEST USER MENU */}
+              <div>
+                <button
+                  onMouseDown={(e) => {
+                    console.log('🔥 MOUSE DOWN EVENT FIRED!')
+                    setShowUserMenu(!showUserMenu)
+                  }}
+                  onMouseUp={() => console.log('� MOUSE UP EVENT FIRED!')}
+                  onTouchStart={() => console.log('🔥 TOUCH START EVENT FIRED!')}
+                  style={{
+                    background: 'orange',
+                    color: 'white',
+                    padding: '12px 16px',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    zIndex: 999999
+                  }}
+                >
+                  ⚡ John Doe {showUserMenu ? '▲' : '▼'}
+                </button>
+
+                {showUserMenu && (
+                  <div 
+                    style={{
+                      position: 'absolute',
+                      right: '0',
+                      top: '100%',
+                      marginTop: '8px',
+                      background: 'white',
+                      border: '1px solid #ccc',
+                      borderRadius: '8px',
+                      padding: '8px 0',
+                      minWidth: '200px',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                      zIndex: 999999
+                    }}
+                  >
+                    <button
+                      onMouseDown={() => {
+                        console.log('� LOGOUT BUTTON MOUSE DOWN!')
+                        alert('LOGOUT CLICKED!')
+                        handleLogout()
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        border: 'none',
+                        background: 'white',
+                        color: 'red',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        fontSize: '14px'
+                      }}
+                    >
+                      🚪 Sign Out
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* HIDDEN ORIGINAL MENUS */}
+              <div style={{ display: 'none' }}>
+                <motion.button
+                  onClick={() => {
+                    console.log('User menu clicked, current state:', showUserMenu)
+                    setShowUserMenu(!showUserMenu)
+                  }}
+                  className="flex items-center space-x-2 p-2 rounded-lg hover:bg-light-gray transition-all duration-200 group"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <div className="h-8 w-8 bg-primary rounded-full flex items-center justify-center">
                     <User className="h-5 w-5 text-white" />
                   </div>
-                  <span className="hidden lg:block text-sm font-medium text-gray-700">
-                    {user?.firstName}
+                  <span className="hidden lg:block text-sm font-medium text-dark-navy group-hover:text-primary transition-colors">
+                    {user ? `${user.firstName} ${user.lastName}` : 'John Doe'}
                   </span>
-                </button>
+                  <ChevronDown className={`hidden lg:block h-4 w-4 text-muted-gray group-hover:text-primary transition-all duration-200 ${
+                    showUserMenu ? 'rotate-180' : ''
+                  }`} />
+                </motion.button>
 
                 <AnimatePresence>
                   {showUserMenu && (
                     <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50"
+                      initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                      className="absolute right-0 mt-2 w-56 bg-soft-white rounded-lg shadow-counsel-lg border border-muted-gray py-2 z-50"
                     >
+                      <div className="px-4 py-3 border-b border-muted-gray">
+                        <div className="text-sm font-medium text-dark-navy">
+                          {user ? `${user.firstName} ${user.lastName}` : 'John Doe'}
+                        </div>
+                        <div className="text-xs text-muted-gray">
+                          {user?.email || 'john.doe@lawfirm.com'}
+                        </div>
+                        <div className="text-xs text-muted-gray">
+                          {user?.title || 'Senior Partner'}
+                        </div>
+                      </div>
                       <Link
                         to="/profile"
-                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="flex items-center px-4 py-3 text-sm text-dark-navy hover:bg-light-gray transition-colors"
                         onClick={() => setShowUserMenu(false)}
                       >
-                        <User className="h-4 w-4 mr-2" />
-                        Profile
+                        <User className="h-4 w-4 mr-3 text-primary" />
+                        View Profile
                       </Link>
                       <Link
                         to="/settings"
-                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="flex items-center px-4 py-3 text-sm text-dark-navy hover:bg-light-gray transition-colors"
                         onClick={() => setShowUserMenu(false)}
                       >
-                        <Settings className="h-4 w-4 mr-2" />
+                        <Settings className="h-4 w-4 mr-3 text-primary" />
                         Settings
                       </Link>
-                      <hr className="my-1" />
+                      <hr className="my-2 border-muted-gray" />
                       <button
-                        onClick={handleLogout}
-                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => {
+                          console.log('Top bar Sign Out clicked')
+                          handleLogout()
+                        }}
+                        className="flex items-center w-full px-4 py-3 text-sm text-danger hover:bg-light-gray transition-colors font-medium"
                       >
-                        <LogOut className="h-4 w-4 mr-2" />
+                        <LogOut className="h-4 w-4 mr-3" />
                         Sign Out
                       </button>
                     </motion.div>
@@ -215,9 +563,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
         </header>
 
-        {/* Main content */}
-        <main className="py-6">
-          {children}
+        {/* Main content with proper spacing and max width */}
+        <main className="py-gutter">
+          <div className="max-w-app mx-auto px-4 lg:px-gutter">
+            {children}
+          </div>
         </main>
       </div>
     </div>

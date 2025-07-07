@@ -18,7 +18,14 @@ export class AiService {
   ) {}
 
   async chat(chatMessageDto: ChatMessageDto) {
-    return this.openAiService.chat(chatMessageDto.message, chatMessageDto.context);
+    const response = await this.openAiService.chat(chatMessageDto.message, chatMessageDto.context);
+    return {
+      message: response.message || response.response, // Handle both formats
+      assistantName: response.assistantName || 'Flow',
+      provider: response.provider,
+      model: response.model,
+      timestamp: response.timestamp
+    };
   }
 
   async legalResearch(legalResearchDto: LegalResearchDto) {
