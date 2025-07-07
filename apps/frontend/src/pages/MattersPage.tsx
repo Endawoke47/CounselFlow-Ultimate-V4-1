@@ -44,8 +44,10 @@ import { useAI } from '../contexts/AIContext'
 import { logger } from '../services/logger'
 import { Tabs, TabPanel } from '../components/ui/Tabs'
 import { Button } from '../components/ui/Button'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card'
 import { Modal, ModalHeader, ModalBody, ModalFooter } from '../components/ui/Modal'
 import { SearchInput, SearchFilters } from '../components/ui/SearchInput'
+import { cn } from '../utils/cn'
 
 interface Matter {
   id: string
@@ -414,7 +416,7 @@ export function MattersPage() {
   }
 
   return (
-    <div className="px-4 lg:px-6 bg-gradient-to-br from-legal-50 to-white min-h-screen">
+    <div className="px-4 lg:px-6 bg-gradient-professional min-h-screen">
       {/* Header */}
       <div className="mb-8">
         <motion.div
@@ -424,30 +426,41 @@ export function MattersPage() {
           className="flex items-center justify-between mb-6"
         >
           <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-counsel-700 to-legal-600 bg-clip-text text-transparent">
+            <h1 className="text-4xl font-bold gradient-text mb-3">
               Matter Management
             </h1>
-            <p className="text-counsel-600 mt-2 text-lg font-medium">
+            <p className="text-primary-600 text-lg font-medium">
               AI-powered case tracking, timeline management, and outcome prediction
             </p>
           </div>
           <div className="flex items-center space-x-3">
-            <motion.button 
-              className="flex items-center space-x-2 px-4 py-2 bg-white/80 backdrop-blur-sm border border-counsel-200 rounded-xl text-counsel-700 font-semibold hover:bg-counsel-50 transition-all duration-200"
+            <motion.div
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              <Upload className="h-4 w-4" />
-              <span>Import Cases</span>
-            </motion.button>
-            <motion.button 
-              className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-counsel-600 to-legal-600 text-white font-semibold rounded-xl shadow-lg hover:from-counsel-700 hover:to-legal-700 transition-all duration-200"
+              <Button
+                variant="outline"
+                size="md"
+                icon={Upload}
+                className="backdrop-blur-sm"
+              >
+                Import Cases
+              </Button>
+            </motion.div>
+            <motion.div
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              <Plus className="h-4 w-4" />
-              <span>New Matter</span>
-            </motion.button>
+              <Button
+                variant="primary"
+                size="lg"
+                icon={Plus}
+                onClick={() => setShowNewMatterModal(true)}
+                className="shadow-lifted"
+              >
+                New Matter
+              </Button>
+            </motion.div>
           </div>
         </motion.div>
 
@@ -458,82 +471,92 @@ export function MattersPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.6 }}
         >
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-counsel-200/50 shadow-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold text-counsel-600">Portfolio Value</p>
-                <p className="text-3xl font-bold text-counsel-800">${(totalValue / 1000000).toFixed(1)}M</p>
+          <Card variant="glass" className="group hover:shadow-lifted transition-all duration-300">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-primary-600">Portfolio Value</p>
+                  <p className="text-3xl font-bold text-primary-900">${(totalValue / 1000000).toFixed(1)}M</p>
+                </div>
+                <div className="p-3 bg-gradient-to-br from-success to-success rounded-xl group-hover:scale-110 transition-transform duration-300">
+                  <DollarSign className="h-6 w-6 text-white" />
+                </div>
               </div>
-              <div className="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-xl">
-                <DollarSign className="h-6 w-6 text-white" />
+              <div className="mt-2 flex items-center text-sm">
+                <TrendingUp className="h-4 w-4 text-success mr-1" />
+                <span className="text-success font-medium">+15%</span>
+                <span className="text-primary-500 ml-1">this quarter</span>
               </div>
-            </div>
-            <div className="mt-2 flex items-center text-sm">
-              <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
-              <span className="text-green-600 font-medium">+15%</span>
-              <span className="text-counsel-500 ml-1">this quarter</span>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-counsel-200/50 shadow-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold text-counsel-600">Active Matters</p>
-                <p className="text-3xl font-bold text-counsel-800">{activeMatters}</p>
+          <Card variant="glass" className="group hover:shadow-lifted transition-all duration-300">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-primary-600">Active Matters</p>
+                  <p className="text-3xl font-bold text-primary-900">{activeMatters}</p>
+                </div>
+                <div className="p-3 bg-gradient-teal rounded-xl group-hover:scale-110 transition-transform duration-300">
+                  <Activity className="h-6 w-6 text-white" />
+                </div>
               </div>
-              <div className="p-3 bg-gradient-to-br from-counsel-500 to-counsel-600 rounded-xl">
-                <Activity className="h-6 w-6 text-white" />
+              <div className="mt-2 flex items-center text-sm">
+                <span className="text-primary-600 font-medium">In progress</span>
               </div>
-            </div>
-            <div className="mt-2 flex items-center text-sm">
-              <span className="text-counsel-600 font-medium">In progress</span>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-counsel-200/50 shadow-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold text-counsel-600">High Risk</p>
-                <p className="text-3xl font-bold text-counsel-800">{highRiskMatters}</p>
+          <Card variant="glass" className="group hover:shadow-lifted transition-all duration-300">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-primary-600">High Risk</p>
+                  <p className="text-3xl font-bold text-primary-900">{highRiskMatters}</p>
+                </div>
+                <div className="p-3 bg-gradient-to-br from-danger to-danger rounded-xl group-hover:scale-110 transition-transform duration-300">
+                  <AlertTriangle className="h-6 w-6 text-white" />
+                </div>
               </div>
-              <div className="p-3 bg-gradient-to-br from-red-500 to-red-600 rounded-xl">
-                <AlertTriangle className="h-6 w-6 text-white" />
+              <div className="mt-2 flex items-center text-sm">
+                <span className="text-danger font-medium">Need attention</span>
               </div>
-            </div>
-            <div className="mt-2 flex items-center text-sm">
-              <span className="text-red-600 font-medium">Need attention</span>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-counsel-200/50 shadow-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold text-counsel-600">Closing Soon</p>
-                <p className="text-3xl font-bold text-counsel-800">{closingThisMonth}</p>
+          <Card variant="glass" className="group hover:shadow-lifted transition-all duration-300">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-primary-600">Closing Soon</p>
+                  <p className="text-3xl font-bold text-primary-900">{closingThisMonth}</p>
+                </div>
+                <div className="p-3 bg-gradient-to-br from-warning to-warning rounded-xl group-hover:scale-110 transition-transform duration-300">
+                  <Timer className="h-6 w-6 text-white" />
+                </div>
               </div>
-              <div className="p-3 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl">
-                <Timer className="h-6 w-6 text-white" />
+              <div className="mt-2 flex items-center text-sm">
+                <span className="text-warning font-medium">This month</span>
               </div>
-            </div>
-            <div className="mt-2 flex items-center text-sm">
-              <span className="text-orange-600 font-medium">This month</span>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-counsel-200/50 shadow-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold text-counsel-600">Avg Progress</p>
-                <p className="text-3xl font-bold text-counsel-800">{avgProgress}%</p>
+          <Card variant="glass" className="group hover:shadow-lifted transition-all duration-300">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-primary-600">Avg Progress</p>
+                  <p className="text-3xl font-bold text-primary-900">{avgProgress}%</p>
+                </div>
+                <div className="p-3 bg-gradient-purple rounded-xl group-hover:scale-110 transition-transform duration-300">
+                  <BarChart3 className="h-6 w-6 text-white" />
+                </div>
               </div>
-              <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl">
-                <BarChart3 className="h-6 w-6 text-white" />
+              <div className="mt-2 flex items-center text-sm">
+                <span className="text-accent-400 font-medium">Overall completion</span>
               </div>
-            </div>
-            <div className="mt-2 flex items-center text-sm">
-              <span className="text-purple-600 font-medium">Overall completion</span>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </motion.div>
 
         {/* Navigation Tabs */}
@@ -730,44 +753,46 @@ export function MattersPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 + index * 0.1 }}
-              className="group bg-white/90 backdrop-blur-sm rounded-2xl border border-counsel-200/50 shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden"
+              className="group"
               whileHover={{ y: -5 }}
             >
-              {/* Matter Header */}
-              <div className="p-6 pb-4">
+              <Card variant="glass" className="overflow-hidden hover:shadow-floating transition-all duration-300">
+                {/* Matter Header */}
+                <CardContent className="p-6 pb-4">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-start space-x-3">
                     <div className={`p-3 rounded-xl bg-gradient-to-br ${getTypeColor(matter.type)}`}>
                       <TypeIcon className="h-5 w-5 text-white" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-bold text-counsel-800 text-lg leading-tight group-hover:text-counsel-700 transition-colors">
+                      <h3 className="font-bold text-primary-900 text-lg leading-tight group-hover:text-primary-700 transition-colors">
                         {matter.title}
                       </h3>
-                      <p className="text-sm text-counsel-600 font-medium capitalize">{matter.type.replace('_', ' ')}</p>
+                      <p className="text-sm text-primary-600 font-medium capitalize">{matter.type.replace('_', ' ')}</p>
                       {matter.caseNumber && (
-                        <p className="text-xs text-counsel-500 font-mono">{matter.caseNumber}</p>
+                        <p className="text-xs text-primary-500 font-mono">{matter.caseNumber}</p>
                       )}
                     </div>
                   </div>
                   
                   <div className="flex items-center space-x-2">
                     {/* Risk Level Indicator */}
-                    <div className={`w-3 h-3 rounded-full ${
-                      matter.riskLevel === 'high' ? 'bg-red-500' :
-                      matter.riskLevel === 'medium' ? 'bg-orange-500' :
-                      'bg-green-500'
-                    }`} />
+                    <div className={cn(
+                      'w-3 h-3 rounded-full',
+                      matter.riskLevel === 'high' ? 'bg-danger' :
+                      matter.riskLevel === 'medium' ? 'bg-warning' :
+                      'bg-success'
+                    )} />
                     
                     <div className="flex items-center space-x-2">
                       <input
                         type="checkbox"
                         checked={selectedMatters.includes(matter.id)}
                         onChange={() => toggleMatterSelection(matter.id)}
-                        className="rounded border-counsel-300 text-counsel-600 focus:ring-counsel-500"
+                        className="rounded border-primary-300 text-primary-600 focus:ring-primary-500"
                       />
                       <motion.button 
-                        className="p-2 text-counsel-400 hover:text-counsel-600 hover:bg-counsel-50 rounded-lg transition-colors"
+                        className="p-2 text-primary-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
                       >
@@ -778,24 +803,27 @@ export function MattersPage() {
                 </div>
 
                 {/* Status and Priority */}
+                {/* Status and Priority */}
                 <div className="flex items-center justify-between mb-4">
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${
-                    matter.status === 'active' ? 'bg-green-100 text-green-700 border border-green-200' :
-                    matter.status === 'review' ? 'bg-orange-100 text-orange-700 border border-orange-200' :
-                    matter.status === 'pending' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
-                    matter.status === 'settlement' ? 'bg-purple-100 text-purple-700 border border-purple-200' :
+                  <span className={cn(
+                    'inline-flex items-center px-3 py-1 rounded-full text-xs font-bold',
+                    matter.status === 'active' ? 'bg-success/10 text-success border border-success/20' :
+                    matter.status === 'review' ? 'bg-warning/10 text-warning border border-warning/20' :
+                    matter.status === 'pending' ? 'bg-info/10 text-info border border-info/20' :
+                    matter.status === 'settlement' ? 'bg-accent-400/10 text-accent-400 border border-accent-400/20' :
                     matter.status === 'closed' ? 'bg-gray-100 text-gray-700 border border-gray-200' :
-                    'bg-red-100 text-red-700 border border-red-200'
-                  }`}>
+                    'bg-danger/10 text-danger border border-danger/20'
+                  )}>
                     {matter.status.toUpperCase()}
                   </span>
                   
-                  <span className={`inline-flex items-center px-2 py-1 rounded-lg text-xs font-semibold ${
-                    matter.priority === 'critical' ? 'bg-red-50 text-red-600' :
-                    matter.priority === 'high' ? 'bg-orange-50 text-orange-600' :
-                    matter.priority === 'medium' ? 'bg-blue-50 text-blue-600' :
-                    'bg-green-50 text-green-600'
-                  }`}>
+                  <span className={cn(
+                    'inline-flex items-center px-2 py-1 rounded-lg text-xs font-semibold',
+                    matter.priority === 'critical' ? 'bg-danger/10 text-danger' :
+                    matter.priority === 'high' ? 'bg-warning/10 text-warning' :
+                    matter.priority === 'medium' ? 'bg-info/10 text-info' :
+                    'bg-success/10 text-success'
+                  )}>
                     {matter.priority.toUpperCase()}
                   </span>
                 </div>
@@ -804,12 +832,12 @@ export function MattersPage() {
                 {matter.status !== 'closed' && (
                   <div className="mb-4">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-semibold text-counsel-600">Progress</span>
-                      <span className="text-xs font-bold text-counsel-800">{matter.progress}%</span>
+                      <span className="text-xs font-semibold text-primary-600">Progress</span>
+                      <span className="text-xs font-bold text-primary-900">{matter.progress}%</span>
                     </div>
-                    <div className="w-full bg-counsel-100 rounded-full h-2">
+                    <div className="w-full bg-primary-100 rounded-full h-2">
                       <motion.div 
-                        className="bg-gradient-to-r from-counsel-500 to-legal-500 h-2 rounded-full"
+                        className="bg-gradient-teal h-2 rounded-full"
                         initial={{ width: 0 }}
                         animate={{ width: `${matter.progress}%` }}
                         transition={{ delay: 0.8 + index * 0.1, duration: 0.8 }}
@@ -818,120 +846,122 @@ export function MattersPage() {
                   </div>
                 )}
 
-                <p className="text-sm text-counsel-600 mb-4 line-clamp-2 leading-relaxed">
+                <p className="text-sm text-primary-600 mb-4 line-clamp-2 leading-relaxed">
                   {matter.description}
                 </p>
-              </div>
+                </CardContent>
 
-              {/* Matter Details */}
-              <div className="px-6 py-4 bg-gradient-to-br from-legal-50/50 to-counsel-50/30 border-t border-counsel-100">
-                <div className="space-y-3 text-sm">
-                  <div className="flex items-center justify-between">
-                    <span className="text-counsel-600 font-medium flex items-center">
-                      <User className="h-3 w-3 mr-1" />
-                      Client:
-                    </span>
-                    <span className="font-bold text-counsel-800">{matter.clientName}</span>
-                  </div>
+                {/* Matter Details */}
+                <div className="px-6 py-4 bg-gradient-to-br from-primary-50/50 to-secondary-50/30 border-t border-primary-100">
+                  <div className="space-y-3 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-primary-600 font-medium flex items-center">
+                        <User className="h-3 w-3 mr-1" />
+                        Client:
+                      </span>
+                      <span className="font-bold text-primary-900">{matter.clientName}</span>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <span className="text-primary-600 font-medium flex items-center">
+                        <DollarSign className="h-3 w-3 mr-1" />
+                        Value:
+                      </span>
+                      <span className="font-bold text-success">
+                        {matter.estimatedValue > 0 ? `$${matter.estimatedValue.toLocaleString()}` : 'TBD'}
+                      </span>
+                    </div>
                   
-                  <div className="flex items-center justify-between">
-                    <span className="text-counsel-600 font-medium flex items-center">
-                      <DollarSign className="h-3 w-3 mr-1" />
-                      Value:
-                    </span>
-                    <span className="font-bold text-green-600">
-                      {matter.estimatedValue > 0 ? `$${matter.estimatedValue.toLocaleString()}` : 'TBD'}
-                    </span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <span className="text-counsel-600 font-medium flex items-center">
-                      <Calendar className="h-3 w-3 mr-1" />
-                      Due Date:
-                    </span>
-                    <span className="font-medium text-counsel-800 text-xs">
-                      {new Date(matter.dueDate).toLocaleDateString()}
-                    </span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <span className="text-counsel-600 font-medium">Assigned:</span>
-                    <span className="font-medium text-counsel-800">{matter.assignedLawyer}</span>
+                    <div className="flex items-center justify-between">
+                      <span className="text-primary-600 font-medium flex items-center">
+                        <Calendar className="h-3 w-3 mr-1" />
+                        Due Date:
+                      </span>
+                      <span className="font-medium text-primary-900 text-xs">
+                        {new Date(matter.dueDate).toLocaleDateString()}
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <span className="text-primary-600 font-medium">Assigned:</span>
+                      <span className="font-medium text-primary-900">{matter.assignedLawyer}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* AI Prediction */}
-              <div className="px-6 py-4 bg-gradient-to-r from-counsel-50 to-legal-50 border-t border-counsel-100">
-                <div className="flex items-center mb-2">
-                  <Brain className="h-4 w-4 text-counsel-600 mr-2" />
-                  <span className="text-sm font-bold text-counsel-700">AI Prediction</span>
-                </div>
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div>
-                    <p className="text-counsel-500 font-medium">Outcome</p>
-                    <p className={`font-bold ${
-                      matter.aiPrediction.outcome === 'favorable' ? 'text-green-600' :
-                      matter.aiPrediction.outcome === 'unfavorable' ? 'text-red-600' :
-                      'text-orange-600'
-                    }`}>
-                      {matter.aiPrediction.outcome} ({matter.aiPrediction.confidence}%)
-                    </p>
+                {/* AI Prediction */}
+                <div className="px-6 py-4 bg-gradient-to-r from-primary-50 to-secondary-50 border-t border-primary-100">
+                  <div className="flex items-center mb-2">
+                    <Brain className="h-4 w-4 text-primary-600 mr-2" />
+                    <span className="text-sm font-bold text-primary-700">AI Prediction</span>
                   </div>
-                  <div>
-                    <p className="text-counsel-500 font-medium">Timeline</p>
-                    <p className="font-bold text-counsel-800">{matter.aiPrediction.timeToResolution}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* AI Insights */}
-              {matter.aiInsights && matter.aiInsights.length > 0 && (
-                <div className="px-6 py-4 bg-gradient-to-r from-legal-50 to-counsel-50 border-t border-counsel-100">
-                  <div className="space-y-1">
-                    {matter.aiInsights.slice(0, 2).map((insight, idx) => (
-                      <p key={idx} className="text-xs text-counsel-600 leading-relaxed">
-                        • {insight}
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    <div>
+                      <p className="text-primary-500 font-medium">Outcome</p>
+                      <p className={cn(
+                        'font-bold',
+                        matter.aiPrediction.outcome === 'favorable' ? 'text-success' :
+                        matter.aiPrediction.outcome === 'unfavorable' ? 'text-danger' :
+                        'text-warning'
+                      )}>
+                        {matter.aiPrediction.outcome} ({matter.aiPrediction.confidence}%)
                       </p>
-                    ))}
+                    </div>
+                    <div>
+                      <p className="text-primary-500 font-medium">Timeline</p>
+                      <p className="font-bold text-primary-900">{matter.aiPrediction.timeToResolution}</p>
+                    </div>
                   </div>
                 </div>
-              )}
 
-              {/* Action Buttons */}
-              <div className="px-6 py-4 border-t border-counsel-100 bg-white/50">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      variant="ghost"
-                      size="xs"
-                      onClick={() => handleMatterAction('view', matter.id)}
-                      icon={Eye}
-                    />
-                    <Button
-                      variant="ghost"
-                      size="xs"
-                      onClick={() => handleMatterAction('edit', matter.id)}
-                      icon={Edit}
-                    />
-                    <Button
-                      variant="ghost"
-                      size="xs"
-                      onClick={() => handleMatterAction('download', matter.id)}
-                      icon={Download}
-                    />
+                {/* AI Insights */}
+                {matter.aiInsights && matter.aiInsights.length > 0 && (
+                  <div className="px-6 py-4 bg-gradient-to-r from-secondary-50 to-primary-50 border-t border-primary-100">
+                    <div className="space-y-1">
+                      {matter.aiInsights.slice(0, 2).map((insight, idx) => (
+                        <p key={idx} className="text-xs text-primary-600 leading-relaxed">
+                          • {insight}
+                        </p>
+                      ))}
+                    </div>
                   </div>
-                  
-                  <Button
-                    variant="primary"
-                    size="xs"
-                    onClick={() => handleMatterAction('ai-analyze', matter.id)}
-                    icon={Zap}
-                  >
-                    AI Analyze
-                  </Button>
+                )}
+
+                {/* Action Buttons */}
+                <div className="px-6 py-4 border-t border-primary-100 bg-white/50">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="xs"
+                        onClick={() => handleMatterAction('view', matter.id)}
+                        icon={Eye}
+                      />
+                      <Button
+                        variant="ghost"
+                        size="xs"
+                        onClick={() => handleMatterAction('edit', matter.id)}
+                        icon={Edit}
+                      />
+                      <Button
+                        variant="ghost"
+                        size="xs"
+                        onClick={() => handleMatterAction('download', matter.id)}
+                        icon={Download}
+                      />
+                    </div>
+                    
+                    <Button
+                      variant="primary"
+                      size="xs"
+                      onClick={() => handleMatterAction('ai-analyze', matter.id)}
+                      icon={Zap}
+                    >
+                      AI Analyze
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              </Card>
             </motion.div>
           )
         })}
@@ -1033,26 +1063,28 @@ export function MattersPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
         >
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-12 border border-counsel-200/50 shadow-lg max-w-md mx-auto">
-            <div className="p-4 bg-gradient-to-br from-counsel-100 to-legal-100 rounded-2xl w-fit mx-auto mb-6">
-              <Briefcase className="h-12 w-12 text-counsel-600" />
-            </div>
-            <h3 className="text-xl font-bold text-counsel-800 mb-3">No matters found</h3>
-            <p className="text-counsel-600 mb-6 leading-relaxed">
-              {searchTerm || filterStatus !== 'all' || filterType !== 'all'
-                ? 'Try adjusting your search criteria or filters.'
-                : 'Start managing your legal matters with AI-powered case tracking and predictions.'
-              }
-            </p>
-            <Button
-              variant="primary"
-              size="lg"
-              onClick={() => setShowNewMatterModal(true)}
-              icon={Plus}
-            >
-              Create New Matter
-            </Button>
-          </div>
+          <Card variant="glass" className="p-12 max-w-md mx-auto text-center">
+            <CardContent className="pt-6">
+              <div className="p-4 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-2xl w-fit mx-auto mb-6">
+                <Briefcase className="h-12 w-12 text-primary-600" />
+              </div>
+              <h3 className="text-xl font-bold text-primary-900 mb-3">No matters found</h3>
+              <p className="text-primary-600 mb-6 leading-relaxed">
+                {searchTerm || filterStatus !== 'all' || filterType !== 'all'
+                  ? 'Try adjusting your search criteria or filters.'
+                  : 'Start managing your legal matters with AI-powered case tracking and predictions.'
+                }
+              </p>
+              <Button
+                variant="primary"
+                size="lg"
+                onClick={() => setShowNewMatterModal(true)}
+                icon={Plus}
+              >
+                Create New Matter
+              </Button>
+            </CardContent>
+          </Card>
         </motion.div>
       )}
       

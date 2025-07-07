@@ -315,7 +315,7 @@ const SecuritySettings: React.FC = () => {
 };
 
 const NotificationSettings: React.FC = () => {
-  const [notifications, setNotifications] = useState({
+  const [notifications, setNotifications] = useState<{[key: string]: boolean}>({
     email: true,
     push: true,
     sms: false,

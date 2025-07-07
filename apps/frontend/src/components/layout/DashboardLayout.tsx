@@ -29,6 +29,9 @@ import {
 import { useAuth } from '../../contexts/AuthContext'
 import { motion, AnimatePresence } from 'framer-motion'
 import { SimpleSignOut } from '../SimpleSignOut'
+import { Button } from '../ui/Button'
+import { Card } from '../ui/Card'
+import { cn } from '../../utils/cn'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -113,7 +116,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-light-gray">
+    <div className="min-h-screen bg-gradient-professional">
       {/* Mobile sidebar overlay */}
       <AnimatePresence>
         {sidebarOpen && (
@@ -130,19 +133,20 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               animate={{ x: 0 }}
               exit={{ x: -280 }}
               transition={{ type: 'tween', duration: 0.3 }}
-              className="fixed inset-y-0 left-0 z-50 w-72 bg-primary shadow-counsel-lg lg:hidden"
+              className="fixed inset-y-0 left-0 z-50 w-72 bg-gradient-teal shadow-floating lg:hidden"
             >
               <div className="flex items-center justify-between px-gutter py-6 border-b border-white/20">
                 <div className="flex items-center space-x-2">
                   <Scale className="h-8 w-8 text-white" />
-                  <span className="text-xl font-bold text-white">CounselFlow</span>
+                  <span className="text-xl font-bold text-white gradient-text-white">CounselFlow</span>
                 </div>
-                <button
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setSidebarOpen(false)}
-                  className="p-2 rounded-lg hover:bg-white/10 text-white transition-all duration-200"
-                >
-                  <X className="h-6 w-6" />
-                </button>
+                  icon={X}
+                  className="text-white hover:bg-white/20"
+                />
               </div>
               <nav className="px-4 py-4 space-y-1">
                 {navigation.map((item) => {
@@ -153,13 +157,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                       key={item.name}
                       to={item.href}
                       onClick={() => setSidebarOpen(false)}
-                      className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-200 ${
+                      className={cn(
+                        'flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 group',
                         isActive
-                          ? 'bg-white/20 text-white shadow-soft'
-                          : 'text-white/80 hover:bg-white/10 hover:text-white'
-                      }`}
+                          ? 'bg-white/20 text-white shadow-soft backdrop-blur-sm'
+                          : 'text-white/80 hover:bg-white/10 hover:text-white hover:scale-105'
+                      )}
                     >
-                      <Icon className="h-5 w-5" />
+                      <Icon className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
                       <span className="font-medium">{item.name}</span>
                     </Link>
                   )
@@ -176,7 +181,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                       console.log('🟢 MOBILE SIDEBAR USER MENU CLICKED!')
                       setShowSidebarUserMenu(!showSidebarUserMenu)
                     }}
-                    className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-white hover:bg-white hover:bg-opacity-10 transition-colors"
+                    className="w-full flex items-center space-x-3 px-3 py-3 rounded-xl text-white hover:bg-white/10 transition-all duration-200 group"
                     style={{ zIndex: 1000 }}
                   >
                     <div className="h-10 w-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
@@ -197,24 +202,26 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
                   {showSidebarUserMenu && (
                     <div 
-                      className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2"
+                      className="absolute bottom-full left-0 right-0 mb-2"
                       style={{ zIndex: 1001 }}
                     >
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault()
-                          e.stopPropagation()
-                          console.log('🟢 MOBILE SIDEBAR LOGOUT CLICKED!')
-                          alert('Mobile sidebar logout working!')
-                          handleLogout()
-                          setSidebarOpen(false)
-                          setShowSidebarUserMenu(false)
-                        }}
-                        className="flex items-center w-full px-4 py-3 text-sm text-red-600 hover:bg-gray-100 transition-colors"
-                      >
-                        <LogOut className="h-4 w-4 mr-3" />
-                        Sign Out
-                      </button>
+                      <Card variant="glass" className="py-2">
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            console.log('🟢 MOBILE SIDEBAR LOGOUT CLICKED!')
+                            alert('Mobile sidebar logout working!')
+                            handleLogout()
+                            setSidebarOpen(false)
+                            setShowSidebarUserMenu(false)
+                          }}
+                          className="flex items-center w-full px-4 py-3 text-sm text-danger hover:bg-danger/10 transition-colors rounded-lg"
+                        >
+                          <LogOut className="h-4 w-4 mr-3" />
+                          Sign Out
+                        </button>
+                      </Card>
                     </div>
                   )}
                 </div>
@@ -226,10 +233,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
       {/* Desktop sidebar - Fixed with CounselFlow primary teal background */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-72 lg:flex-col">
-        <div className="flex flex-col flex-grow bg-primary border-r border-primary shadow-counsel-lg">
+        <div className="flex flex-col flex-grow bg-gradient-teal border-r border-primary-600 shadow-floating">
           <div className="flex items-center flex-shrink-0 px-gutter py-6">
             <Scale className="h-8 w-8 text-white" />
-            <span className="ml-2 text-xl font-bold text-white">CounselFlow</span>
+            <span className="ml-2 text-xl font-bold text-white gradient-text-white">CounselFlow</span>
           </div>
           <div className="mt-4 flex-1 flex flex-col overflow-y-auto">
             <nav className="flex-1 px-4 space-y-1">
@@ -240,11 +247,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                   <Link
                     key={item.name}
                     to={item.href}
-                    className={`group flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-200 ${
+                    className={cn(
+                      'group flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200',
                       isActive
-                        ? 'bg-white/20 text-white shadow-soft'
+                        ? 'bg-white/20 text-white shadow-soft backdrop-blur-sm'
                         : 'text-white/80 hover:bg-white/10 hover:text-white hover:scale-105'
-                    }`}
+                    )}
                   >
                     <Icon className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
                     <span className="font-medium">{item.name}</span>
@@ -263,7 +271,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     console.log('🟢 SIDEBAR USER MENU CLICKED!')
                     setShowSidebarUserMenu(!showSidebarUserMenu)
                   }}
-                  className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-white hover:bg-white hover:bg-opacity-10 transition-colors"
+                  className="w-full flex items-center space-x-3 px-3 py-3 rounded-xl text-white hover:bg-white/10 transition-all duration-200 group"
                   style={{ zIndex: 1000 }}
                 >
                   <div className="h-10 w-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
@@ -284,23 +292,25 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
                 {showSidebarUserMenu && (
                   <div 
-                    className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2"
+                    className="absolute bottom-full left-0 right-0 mb-2"
                     style={{ zIndex: 1001 }}
                   >
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        console.log('🟢 SIDEBAR LOGOUT CLICKED!')
-                        alert('Sidebar logout working!')
-                        handleLogout()
-                        setShowSidebarUserMenu(false)
-                      }}
-                      className="flex items-center w-full px-4 py-3 text-sm text-red-600 hover:bg-gray-100 transition-colors"
-                    >
-                      <LogOut className="h-4 w-4 mr-3" />
-                      Sign Out
-                    </button>
+                    <Card variant="glass" className="py-2">
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          console.log('🟢 SIDEBAR LOGOUT CLICKED!')
+                          alert('Sidebar logout working!')
+                          handleLogout()
+                          setShowSidebarUserMenu(false)
+                        }}
+                        className="flex items-center w-full px-4 py-3 text-sm text-danger hover:bg-danger/10 transition-colors rounded-lg"
+                      >
+                        <LogOut className="h-4 w-4 mr-3" />
+                        Sign Out
+                      </button>
+                    </Card>
                   </div>
                 )}
               </div>
@@ -311,24 +321,25 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
       <div className="lg:pl-72">
         {/* Enhanced Topbar - Clean white background with professional spacing */}
-        <header className="bg-soft-white border-b border-muted-gray px-4 lg:px-gutter py-4 shadow-soft sticky top-0 z-30">
+        <header className="bg-white/90 backdrop-blur-md border-b border-primary-200 px-4 lg:px-gutter py-4 shadow-soft sticky top-0 z-30">
           <div className="flex items-center justify-between max-w-app mx-auto">
             <div className="flex items-center space-x-4">
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => setSidebarOpen(true)}
-                className="p-2 rounded-lg hover:bg-light-gray lg:hidden transition-all duration-200 hover:scale-105"
-              >
-                <Menu className="h-6 w-6 text-dark-navy" />
-              </button>
+                icon={Menu}
+                className="lg:hidden text-primary-900"
+              />
               
               {/* Enhanced Search Bar */}
               <div className="ml-4 lg:ml-0">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-gray" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-primary-500" />
                   <input
                     type="text"
                     placeholder="Search matters, contracts, clients..."
-                    className="pl-10 pr-4 py-3 w-64 lg:w-96 border border-muted-gray rounded-lg bg-light-gray focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 text-dark-navy placeholder-muted-gray"
+                    className="pl-10 pr-4 py-3 w-64 lg:w-96 border border-primary-200 rounded-xl bg-white/50 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 text-primary-900 placeholder-primary-500 backdrop-blur-sm"
                   />
                 </div>
               </div>
@@ -337,14 +348,18 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             <div className="flex items-center space-x-3">
               {/* Quick Actions Speed Dial */}
               <div className="relative quick-actions-container">
-                <motion.button
-                  onClick={() => setShowQuickActions(!showQuickActions)}
-                  className="p-2 rounded-lg hover:bg-light-gray relative transition-all duration-200 hover:scale-105"
+                <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <Plus className="h-6 w-6 text-primary" />
-                </motion.button>
+                  <Button
+                    variant="ghost"
+                    size="md"
+                    onClick={() => setShowQuickActions(!showQuickActions)}
+                    icon={Plus}
+                    className="text-primary-600 hover:bg-primary-50"
+                  />
+                </motion.div>
 
                 <AnimatePresence>
                   {showQuickActions && (
@@ -352,7 +367,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                       initial={{ opacity: 0, scale: 0.95, y: -10 }}
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                      className="absolute right-0 mt-2 w-48 bg-soft-white rounded-lg shadow-counsel-lg border border-muted-gray py-2 z-50"
+                      className="absolute right-0 mt-2 w-48 bg-white/95 backdrop-blur-md rounded-xl shadow-floating border border-primary-200 py-2 z-50"
                     >
                       {quickActions.map((action) => {
                         const Icon = action.icon
@@ -363,9 +378,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                               action.action()
                               setShowQuickActions(false)
                             }}
-                            className="flex items-center w-full px-4 py-3 text-sm text-dark-navy hover:bg-light-gray transition-all duration-200"
+                            className="flex items-center w-full px-4 py-3 text-sm text-primary-900 hover:bg-primary-50 transition-all duration-200"
                           >
-                            <Icon className="h-4 w-4 mr-3 text-primary" />
+                            <Icon className="h-4 w-4 mr-3 text-primary-600" />
                             {action.name}
                           </button>
                         )
@@ -377,19 +392,24 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
               {/* Enhanced Notification Bell */}
               <div className="relative notifications-container">
-                <motion.button
-                  onClick={() => setShowNotifications(!showNotifications)}
-                  className="p-2 rounded-lg hover:bg-light-gray relative transition-all duration-200 hover:scale-105"
+                <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
+                  className="relative"
                 >
-                  <Bell className="h-6 w-6 text-dark-navy" />
+                  <Button
+                    variant="ghost"
+                    size="md"
+                    onClick={() => setShowNotifications(!showNotifications)}
+                    icon={Bell}
+                    className="text-primary-900 hover:bg-primary-50 relative"
+                  />
                   <motion.span 
                     className="absolute -top-1 -right-1 h-3 w-3 bg-danger rounded-full"
                     animate={{ scale: [1, 1.2, 1] }}
                     transition={{ duration: 2, repeat: Infinity }}
                   />
-                </motion.button>
+                </motion.div>
 
                 <AnimatePresence>
                   {showNotifications && (
@@ -397,23 +417,24 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                       initial={{ opacity: 0, scale: 0.95, y: -10 }}
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                      className="absolute right-0 mt-2 w-80 bg-soft-white rounded-lg shadow-counsel-lg border border-muted-gray py-2 z-50"
+                      className="absolute right-0 mt-2 w-80 bg-white/95 backdrop-blur-md rounded-xl shadow-floating border border-primary-200 py-2 z-50"
                     >
-                      <div className="px-4 py-3 border-b border-muted-gray">
-                        <h3 className="text-sm font-semibold text-dark-navy">Notifications</h3>
+                      <div className="px-4 py-3 border-b border-primary-200">
+                        <h3 className="text-sm font-semibold text-primary-900">Notifications</h3>
                       </div>
                       <div className="max-h-64 overflow-y-auto">
                         {notifications.map((notification) => (
-                          <div key={notification.id} className="px-4 py-3 hover:bg-light-gray transition-colors">
+                          <div key={notification.id} className="px-4 py-3 hover:bg-primary-50 transition-colors">
                             <div className="flex items-start space-x-3">
-                              <div className={`w-2 h-2 rounded-full mt-2 ${
+                              <div className={cn(
+                                'w-2 h-2 rounded-full mt-2',
                                 notification.type === 'warning' ? 'bg-warning' :
                                 notification.type === 'success' ? 'bg-success' : 'bg-info'
-                              }`} />
+                              )} />
                               <div className="flex-1">
-                                <p className="text-sm font-medium text-dark-navy">{notification.title}</p>
-                                <p className="text-xs text-muted-gray mt-1">{notification.message}</p>
-                                <p className="text-xs text-muted-gray mt-1">{notification.time}</p>
+                                <p className="text-sm font-medium text-primary-900">{notification.title}</p>
+                                <p className="text-xs text-primary-600 mt-1">{notification.message}</p>
+                                <p className="text-xs text-primary-500 mt-1">{notification.time}</p>
                               </div>
                             </div>
                           </div>
@@ -565,7 +586,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
         {/* Main content with proper spacing and max width */}
         <main className="py-gutter">
-          <div className="max-w-app mx-auto px-4 lg:px-gutter">
+          <div className="max-w-app mx-auto">
             {children}
           </div>
         </main>

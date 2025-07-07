@@ -32,6 +32,9 @@ import { motion } from 'framer-motion'
 import { mattersApi, contractsApi, usersApi } from '../services/api'
 import { LoadingSpinner } from '../components/ui/LoadingSpinner'
 import { AIInsights } from '../components/ai/AIInsights'
+import { Button } from '../components/ui/Button'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card'
+import { cn } from '../utils/cn'
 
 export function Dashboard() {
   const { user } = useAuth()
@@ -175,7 +178,7 @@ export function Dashboard() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner size="lg" />
+        <LoadingSpinner size="lg" variant="ai" text="Loading your dashboard..." />
       </div>
     )
   }
@@ -183,17 +186,20 @@ export function Dashboard() {
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Error Loading Dashboard</h2>
-          <p className="text-gray-600 mb-4">{error}</p>
-          <button
-            onClick={loadDashboardData}
-            className="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700"
-          >
-            Try Again
-          </button>
-        </div>
+        <Card className="text-center max-w-md">
+          <CardContent className="pt-6">
+            <AlertCircle className="h-12 w-12 text-danger mx-auto mb-4" />
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Error Loading Dashboard</h2>
+            <p className="text-gray-600 mb-4">{error}</p>
+            <Button
+              onClick={loadDashboardData}
+              variant="primary"
+              size="md"
+            >
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -313,17 +319,17 @@ export function Dashboard() {
   ]
 
   return (
-    <div className="px-4 lg:px-6 bg-gradient-to-br from-legal-50 to-white min-h-screen">
+    <div className="px-4 lg:px-6 bg-gradient-professional min-h-screen">
       <div className="mb-8">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-counsel-700 to-legal-600 bg-clip-text text-transparent">
+          <h1 className="text-4xl font-bold gradient-text mb-3">
             Welcome back, {user?.firstName}!
           </h1>
-          <p className="text-counsel-600 mt-2 text-lg font-medium">
+          <p className="text-primary-600 text-lg font-medium">
             Your comprehensive legal command center is ready
           </p>
         </motion.div>
@@ -339,22 +345,31 @@ export function Dashboard() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-counsel-200/50 hover:shadow-xl transition-all duration-300"
             >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-counsel-600">{stat.name}</p>
-                  <p className="text-3xl font-bold text-counsel-800 mt-1">{stat.value}</p>
-                </div>
-                <div className={`p-3 rounded-xl bg-gradient-to-br ${stat.color === 'bg-teal-500' ? 'from-counsel-500 to-counsel-600' : stat.color === 'bg-blue-500' ? 'from-legal-500 to-legal-600' : stat.color === 'bg-purple-500' ? 'from-purple-500 to-purple-600' : 'from-green-500 to-green-600'}`}>
-                  <Icon className="h-6 w-6 text-white" />
-                </div>
-              </div>
-              <div className="mt-4 flex items-center">
-                <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
-                <span className="text-sm text-green-600 font-medium">{stat.change}</span>
-                <span className="text-sm text-counsel-500 ml-2">from last month</span>
-              </div>
+              <Card variant="glass" className="group hover:shadow-lifted transition-all duration-300">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-primary-600">{stat.name}</p>
+                      <p className="text-3xl font-bold text-primary-900 mt-1">{stat.value}</p>
+                    </div>
+                    <div className={cn(
+                      'p-3 rounded-xl icon-gradient transition-transform duration-300 group-hover:scale-110',
+                      stat.color === 'bg-teal-500' ? 'bg-gradient-teal' :
+                      stat.color === 'bg-blue-500' ? 'bg-gradient-to-br from-secondary-500 to-secondary-600' :
+                      stat.color === 'bg-purple-500' ? 'bg-gradient-purple' :
+                      'bg-gradient-to-br from-success to-success'
+                    )}>
+                      <Icon className="h-6 w-6 text-white" />
+                    </div>
+                  </div>
+                  <div className="mt-4 flex items-center">
+                    <TrendingUp className="h-4 w-4 text-success mr-1" />
+                    <span className="text-sm text-success font-medium">{stat.change}</span>
+                    <span className="text-sm text-primary-500 ml-2">from last month</span>
+                  </div>
+                </CardContent>
+              </Card>
             </motion.div>
           )
         })}
@@ -368,8 +383,8 @@ export function Dashboard() {
         className="mb-12"
       >
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-counsel-800 mb-2">Legal Practice Modules</h2>
-          <p className="text-counsel-600">Access all areas of your legal practice management platform</p>
+          <h2 className="text-2xl font-bold text-primary-900 mb-2">Legal Practice Modules</h2>
+          <p className="text-primary-600">Access all areas of your legal practice management platform</p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
@@ -386,35 +401,38 @@ export function Dashboard() {
               >
                 <Link
                   to={module.path}
-                  className="block bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-counsel-200/50 hover:shadow-2xl transition-all duration-300 hover:border-counsel-300"
+                  className="block"
                 >
+                  <Card variant="glass" className="p-6 hover:shadow-floating transition-all duration-300 group-hover:border-primary-300">
                   <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${module.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
                     <Icon className="h-6 w-6 text-white" />
                   </div>
                   
-                  <h3 className="text-lg font-bold text-counsel-800 mb-2 group-hover:text-counsel-700 transition-colors">
+                  <h3 className="text-lg font-bold text-primary-900 mb-2 group-hover:text-primary-700 transition-colors">
                     {module.name}
                   </h3>
                   
-                  <p className="text-sm text-counsel-600 mb-4 line-clamp-2">
+                  <p className="text-sm text-primary-600 mb-4 line-clamp-2">
                     {module.description}
                   </p>
                   
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
-                      <span className="text-2xl font-bold text-counsel-800">{module.count}</span>
-                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                      <span className="text-2xl font-bold text-primary-900">{module.count}</span>
+                      <span className={cn(
+                        'text-xs px-2 py-1 rounded-full font-medium',
                         module.trending.includes('+') 
-                          ? 'bg-green-100 text-green-700' 
+                          ? 'bg-success/10 text-success border border-success/20' 
                           : module.trending.includes('-')
-                          ? 'bg-red-100 text-red-700'
-                          : 'bg-orange-100 text-orange-700'
-                      }`}>
+                          ? 'bg-danger/10 text-danger border border-danger/20'
+                          : 'bg-warning/10 text-warning border border-warning/20'
+                      )}>
                         {module.trending}
                       </span>
                     </div>
-                    <ArrowUpRight className="h-4 w-4 text-counsel-400 group-hover:text-counsel-600 transition-colors" />
+                    <ArrowUpRight className="h-4 w-4 text-primary-400 group-hover:text-primary-600 transition-colors" />
                   </div>
+                  </Card>
                 </Link>
               </motion.div>
             )
@@ -428,59 +446,67 @@ export function Dashboard() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.2 }}
-          className="lg:col-span-2 bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-counsel-200/50"
+          className="lg:col-span-2"
         >
-          <div className="p-6 border-b border-counsel-200/50">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-gradient-to-br from-counsel-500 to-counsel-600 rounded-lg">
-                  <Briefcase className="h-5 w-5 text-white" />
+          <Card variant="glass">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-gradient-teal rounded-lg">
+                    <Briefcase className="h-5 w-5 text-white" />
+                  </div>
+                  <CardTitle className="text-xl">Recent Matters</CardTitle>
                 </div>
-                <h3 className="text-xl font-bold text-counsel-800">Recent Matters</h3>
-              </div>
-              <Link
-                to="/matters"
-                className="text-counsel-600 hover:text-counsel-700 text-sm font-semibold flex items-center transition-colors"
-              >
-                View all
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </Link>
-            </div>
-          </div>
-          <div className="p-6">
-            <div className="space-y-4">
-              {recentMatters.map((matter, index) => (
-                <motion.div 
-                  key={matter.id} 
-                  className="flex items-center justify-between p-5 bg-gradient-to-r from-legal-50 to-counsel-50 rounded-xl border border-counsel-100 hover:shadow-md transition-all duration-300"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 1.3 + index * 0.1 }}
+                <Link
+                  to="/matters"
+                  className="text-primary-600 hover:text-primary-700 text-sm font-semibold flex items-center transition-colors"
                 >
-                  <div className="flex-1">
-                    <h4 className="font-bold text-counsel-800">{matter.title}</h4>
-                    <p className="text-sm text-counsel-600 font-medium">{matter.client}</p>
-                    <div className="flex items-center mt-3 space-x-3">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                        matter.status === 'active' ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-yellow-100 text-yellow-700 border border-yellow-200'
-                      }`}>
-                        {matter.status}
-                      </span>
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                        matter.priority === 'high' ? 'bg-red-100 text-red-700 border border-red-200' : 'bg-blue-100 text-blue-700 border border-blue-200'
-                      }`}>
-                        {matter.priority} priority
-                      </span>
+                  View all
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {recentMatters.map((matter, index) => (
+                  <motion.div 
+                    key={matter.id} 
+                    className="flex items-center justify-between p-5 bg-gradient-to-r from-primary-50 to-secondary-50 rounded-xl border border-primary-100 hover:shadow-soft transition-all duration-300"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 1.3 + index * 0.1 }}
+                  >
+                    <div className="flex-1">
+                      <h4 className="font-bold text-primary-900">{matter.title}</h4>
+                      <p className="text-sm text-primary-600 font-medium">{matter.client}</p>
+                      <div className="flex items-center mt-3 space-x-3">
+                        <span className={cn(
+                          'inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold',
+                          matter.status === 'active' 
+                            ? 'bg-success/10 text-success border border-success/20' 
+                            : 'bg-warning/10 text-warning border border-warning/20'
+                        )}>
+                          {matter.status}
+                        </span>
+                        <span className={cn(
+                          'inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold',
+                          matter.priority === 'high' 
+                            ? 'bg-danger/10 text-danger border border-danger/20' 
+                            : 'bg-info/10 text-info border border-info/20'
+                        )}>
+                          {matter.priority} priority
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-lg font-bold text-counsel-800">{matter.value}</p>
-                    <p className="text-xs text-counsel-500 font-medium">Due: {matter.dueDate}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
+                    <div className="text-right">
+                      <p className="text-lg font-bold text-primary-900">{matter.value}</p>
+                      <p className="text-xs text-primary-500 font-medium">Due: {matter.dueDate}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </motion.div>
 
         {/* Upcoming Deadlines */}
@@ -488,43 +514,44 @@ export function Dashboard() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.4 }}
-          className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-counsel-200/50"
         >
-          <div className="p-6 border-b border-counsel-200/50">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg">
-                  <Calendar className="h-5 w-5 text-white" />
+          <Card variant="glass">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-gradient-to-br from-warning to-danger rounded-lg">
+                    <Calendar className="h-5 w-5 text-white" />
+                  </div>
+                  <CardTitle className="text-xl">Upcoming Deadlines</CardTitle>
                 </div>
-                <h3 className="text-xl font-bold text-counsel-800">Upcoming Deadlines</h3>
               </div>
-            </div>
-          </div>
-          <div className="p-6">
-            <div className="space-y-4">
-              {upcomingDeadlines.map((deadline, index) => (
-                <motion.div 
-                  key={deadline.id} 
-                  className="flex items-start space-x-4 p-4 bg-gradient-to-r from-orange-50 to-red-50 rounded-xl border border-orange-100"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 1.5 + index * 0.1 }}
-                >
-                  <div className="flex-shrink-0">
-                    <div className="w-3 h-3 bg-gradient-to-br from-orange-500 to-red-500 rounded-full mt-2 animate-pulse-legal"></div>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-counsel-800">{deadline.title}</p>
-                    <p className="text-xs text-counsel-600 font-medium">{deadline.client}</p>
-                    <div className="flex items-center mt-2 text-xs text-orange-600 font-medium">
-                      <Clock className="h-3 w-3 mr-1" />
-                      {deadline.date} at {deadline.time}
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {upcomingDeadlines.map((deadline, index) => (
+                  <motion.div 
+                    key={deadline.id} 
+                    className="flex items-start space-x-4 p-4 bg-gradient-to-r from-warning/10 to-danger/10 rounded-xl border border-warning/20"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 1.5 + index * 0.1 }}
+                  >
+                    <div className="flex-shrink-0">
+                      <div className="w-3 h-3 bg-gradient-to-br from-warning to-danger rounded-full mt-2 animate-pulse"></div>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-primary-900">{deadline.title}</p>
+                      <p className="text-xs text-primary-600 font-medium">{deadline.client}</p>
+                      <div className="flex items-center mt-2 text-xs text-warning font-medium">
+                        <Clock className="h-3 w-3 mr-1" />
+                        {deadline.date} at {deadline.time}
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </motion.div>
       </div>
 
@@ -533,28 +560,36 @@ export function Dashboard() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.6 }}
-        className="mt-8 bg-gradient-to-br from-white/90 to-legal-50/50 backdrop-blur-sm rounded-2xl shadow-lg border border-counsel-200/50"
+        className="mt-8"
       >
-        <div className="p-6 border-b border-counsel-200/50">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-gradient-to-br from-counsel-500 to-legal-600 rounded-lg">
-                <Brain className="h-5 w-5 text-white" />
+        <Card variant="gradient" className="backdrop-blur-sm">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-gradient-teal rounded-lg">
+                  <Brain className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl text-white">AI-Powered Insights</CardTitle>
+                  <CardDescription className="text-white/80">Smart recommendations for your practice</CardDescription>
+                </div>
               </div>
-              <div>
-                <h3 className="text-xl font-bold text-counsel-800">AI-Powered Insights</h3>
-                <p className="text-sm text-counsel-600">Smart recommendations for your practice</p>
-              </div>
+              <Link to="/ai" className="flex items-center">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-white hover:bg-white/20"
+                >
+                  Chat with AI
+                  <MessageSquare className="h-4 w-4 ml-1" />
+                </Button>
+              </Link>
             </div>
-            <Link to="/ai" className="text-counsel-600 hover:text-counsel-700 text-sm font-semibold flex items-center transition-colors">
-              Chat with AI
-              <MessageSquare className="h-4 w-4 ml-1" />
-            </Link>
-          </div>
-        </div>
-        <div className="p-6">
-          <AIInsights type="dashboard" />
-        </div>
+          </CardHeader>
+          <CardContent>
+            <AIInsights type="dashboard" />
+          </CardContent>
+        </Card>
       </motion.div>
     </div>
   )

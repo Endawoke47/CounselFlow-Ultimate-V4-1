@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Plus, Search, Filter, Banknote, Calendar, DollarSign, User, MoreVertical, Brain, AlertTriangle, TrendingUp, Clock, Download, Eye, Edit, Trash2, Upload, BarChart3, Zap, PieChart, Target, Activity, Building2, FileText, CreditCard, Wallet, Calculator, TrendingDown } from 'lucide-react'
+import { Plus, Search, Filter, Banknote, Calendar, DollarSign, User, MoreVertical, Brain, AlertTriangle, TrendingUp, Clock, Download, Eye, Edit, Trash2, Upload, BarChart3, Zap, PieChart, Target, Activity, Building2, FileText, CreditCard, Wallet, Calculator, TrendingDown, Star } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Button, Card, Input, Badge, Modal } from '../components/ui/UIComponents'
 

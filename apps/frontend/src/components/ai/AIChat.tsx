@@ -1,201 +1,264 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Send, Bot, User, Loader, Copy, ThumbsUp, ThumbsDown, MoreVertical, Zap, FileText, Scale, Shield, Brain } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useAI } from '../../contexts/AIContext'
-import { AIResponse } from '../../services/ai/types'
-
-interface ChatMessage {
-  id: string
-  type: 'user' | 'ai'
-  content: string
-  timestamp: string
-  metadata?: AIResponse['metadata']
-  provider?: string
-  confidence?: number
-}
+import { 
+  Send, 
+  Bot, 
+  User, 
+  Loader2, 
+  Copy, 
+  ThumbsUp, 
+  ThumbsDown,
+  RefreshCw,
+  FileText,
+  Scale,
+  Search,
+  BookOpen,
+  Zap,
+  Sparkles
+} from 'lucide-react'
+import { Button } from '../ui/Button'
+import { Card } from '../ui/Card'
+import { cn } from '../../utils/cn'
+import { openAIService, ChatMessage } from '../../services/ai/openai-service'
+import { logger } from '../../services/logger'
+import { safeAsync } from '../../services/errorHandler'
 
 interface AIChatProps {
-  context?: string
   mode?: 'chat' | 'research' | 'contract' | 'analysis'
-  onActionRequest?: (action: string, data: any) => void
+  className?: string
 }
 
-export function AIChat({ context, mode = 'chat', onActionRequest }: AIChatProps) {
-  const { aiService, isLoading, error, currentProvider, setProvider, availableProviders } = useAI()
-  const [messages, setMessages] = useState<ChatMessage[]>([])
-  const [inputValue, setInputValue] = useState('')
+interface Message extends ChatMessage {
+  id: string
+  timestamp: string
+  status?: 'sending' | 'sent' | 'error'
+  isTyping?: boolean
+}
+
+const LEGAL_PROMPTS = {
+  chat: [
+    'Explain the key elements of a valid contract',
+    'What are the requirements for establishing negligence?',
+    'How does intellectual property law protect innovations?',
+    'What are the differences between mediation and arbitration?'
+  ],
+  research: [
+    'Research recent developments in privacy law',
+    'Find precedents for employment discrimination cases',
+    'Analyze regulatory changes in financial services',
+    'Compare contract law across different jurisdictions'
+  ],
+  contract: [
+    'Review this service agreement for potential risks',
+    'Draft a non-disclosure agreement template',
+    'Analyze termination clauses in this contract',
+    'Identify missing provisions in this agreement'
+  ],
+  analysis: [
+    'Assess the legal risks of this business decision',
+    'Evaluate compliance requirements for this industry',
+    'Analyze the strength of this legal position',
+    'Review this case for settlement opportunities'
+  ]
+}
+
+export function AIChat({ mode = 'chat', className }: AIChatProps) {
+  const [messages, setMessages] = useState<Message[]>([])
+  const [input, setInput] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
-
   useEffect(() => {
-    scrollToBottom()
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
   useEffect(() => {
-    // Add welcome message
+    // Initialize with a welcome message based on mode
+    const welcomeMessages = {
+      chat: 'Hello! I\'m your AI legal assistant. I can help you with legal questions, document analysis, and research. How can I assist you today?',
+      research: 'I\'m ready to help you conduct legal research. I can find case law, analyze regulations, and provide comprehensive legal insights. What would you like to research?',
+      contract: 'I\'m here to help with contract analysis and drafting. I can review agreements, identify risks, and suggest improvements. What contract would you like me to analyze?',
+      analysis: 'I\'m your legal analysis assistant. I can evaluate legal positions, assess risks, and provide strategic recommendations. What would you like me to analyze?'
+    }
+
     if (messages.length === 0) {
       setMessages([{
         id: '1',
-        type: 'ai',
-        content: getWelcomeMessage(mode),
+        role: 'assistant',
+        content: welcomeMessages[mode],
         timestamp: new Date().toISOString()
       }])
     }
   }, [mode])
 
-  const getWelcomeMessage = (chatMode: string) => {
-    switch (chatMode) {
-      case 'research':
-        return "Hello! I'm your legal research assistant. I can help you find case law, analyze precedents, and research legal questions. What would you like to research?"
-      case 'contract':
-        return "Hi! I'm here to help with contract drafting and analysis. I can draft new contracts, review existing ones, or suggest improvements. What contract work do you need?"
-      case 'analysis':
-        return "Welcome! I specialize in legal document analysis and risk assessment. Upload a document or describe what you'd like me to analyze."
-      default:
-        return "Hello! I'm CounselFlow AI, your comprehensive legal assistant. I can help with legal research, contract drafting, document analysis, risk assessment, and general legal questions. How can I assist you today?"
-    }
-  }
+  const sendMessage = async (messageContent?: string) => {
+    const content = messageContent || input.trim()
+    if (!content || isLoading) return
 
-  const handleSendMessage = async () => {
-    if (!inputValue.trim() || isTyping) return
-
-    const userMessage: ChatMessage = {
+    const userMessage: Message = {
       id: Date.now().toString(),
-      type: 'user',
-      content: inputValue,
-      timestamp: new Date().toISOString()
+      role: 'user',
+      content,
+      timestamp: new Date().toISOString(),
+      status: 'sent'
     }
 
     setMessages(prev => [...prev, userMessage])
-    setInputValue('')
+    setInput('')
+    setIsLoading(true)
     setIsTyping(true)
 
     try {
-      const response = await aiService.chatWithAI(inputValue, context)
-      
-      const aiMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        type: 'ai',
-        content: response.content,
-        timestamp: response.timestamp,
-        metadata: response.metadata,
-        provider: response.provider,
-        confidence: response.confidence
+      // Prepare context based on mode
+      const systemPrompt = getSystemPrompt(mode)
+      const chatMessages: ChatMessage[] = [
+        { role: 'system', content: systemPrompt },
+        ...messages.map(msg => ({ role: msg.role, content: msg.content })),
+        { role: 'user', content }
+      ]
+
+      const result = await safeAsync(async () => {
+        return await openAIService.chat(chatMessages)
+      }, 'AI chat')
+
+      if (result.error) {
+        throw result.error
       }
 
-      setMessages(prev => [...prev, aiMessage])
-    } catch (err) {
-      const errorMessage: ChatMessage = {
+      const response = result.data || 'No response received'
+
+      // Simulate typing delay for better UX
+      await new Promise(resolve => setTimeout(resolve, 1000))
+
+      const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
-        type: 'ai',
-        content: 'I apologize, but I encountered an error processing your request. Please try again or contact support if the issue persists.',
-        timestamp: new Date().toISOString()
+        role: 'assistant',
+        content: response,
+        timestamp: new Date().toISOString(),
+        status: 'sent'
       }
+
+      setMessages(prev => [...prev, assistantMessage])
+      logger.info('AI chat message sent successfully', { mode, messageLength: content.length })
+
+    } catch (error) {
+      logger.error('AI chat error', { error, mode })
+      
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: 'I apologize, but I encountered an error processing your request. Please try again or contact support if the issue persists.',
+        timestamp: new Date().toISOString(),
+        status: 'error'
+      }
+
       setMessages(prev => [...prev, errorMessage])
     } finally {
+      setIsLoading(false)
       setIsTyping(false)
     }
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      handleSendMessage()
+  const getSystemPrompt = (chatMode: string): string => {
+    const prompts = {
+      chat: 'You are an expert legal AI assistant with deep knowledge of law across multiple jurisdictions. Provide accurate, helpful, and professional legal guidance. Always remind users that your advice should not replace consultation with a qualified attorney for specific legal matters.',
+      research: 'You are a legal research specialist. Provide comprehensive, well-sourced legal research with citations to relevant cases, statutes, and regulations. Focus on accuracy and thoroughness in your research methodology.',
+      contract: 'You are a contract analysis expert. Analyze contracts for key terms, potential risks, missing clauses, and compliance issues. Provide clear, actionable recommendations for contract improvements.',
+      analysis: 'You are a legal analyst specializing in risk assessment and strategic legal advice. Analyze legal situations, identify potential issues, and provide strategic recommendations with risk assessments.'
+    }
+
+    return prompts[chatMode as keyof typeof prompts] || prompts.chat
+  }
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      // Could add a toast notification here
+    } catch (error) {
+      logger.error('Failed to copy to clipboard', { error })
     }
   }
 
-  const copyMessage = (content: string) => {
-    navigator.clipboard.writeText(content)
+  const clearChat = () => {
+    setMessages([{
+      id: Date.now().toString(),
+      role: 'assistant',
+      content: getSystemPrompt(mode),
+      timestamp: new Date().toISOString()
+    }])
   }
 
-  const handleQuickAction = async (action: string) => {
-    const actions = {
-      'draft-nda': 'Draft a standard non-disclosure agreement for a technology company',
-      'research-precedent': 'Find recent precedents for software licensing disputes',
-      'analyze-risk': 'Analyze the legal risks in this situation',
-      'compliance-check': 'Check compliance requirements for data privacy'
-    }
-
-    if (actions[action as keyof typeof actions]) {
-      setInputValue(actions[action as keyof typeof actions])
-      inputRef.current?.focus()
+  const getModeIcon = () => {
+    switch (mode) {
+      case 'research': return Search
+      case 'contract': return FileText
+      case 'analysis': return Scale
+      default: return Bot
     }
   }
+
+  const getModeColor = () => {
+    switch (mode) {
+      case 'research': return 'from-blue-500 to-blue-600'
+      case 'contract': return 'from-green-500 to-green-600'
+      case 'analysis': return 'from-purple-500 to-purple-600'
+      default: return 'from-primary-500 to-primary-600'
+    }
+  }
+
+  const ModeIcon = getModeIcon()
 
   return (
-    <div className="flex flex-col h-full bg-white rounded-xl shadow-sm border border-gray-200">
+    <Card className={cn('flex flex-col h-full max-h-[600px]', className)} padding="none">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
+      <div className={`flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r ${getModeColor()}`}>
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-gradient-to-r from-cyan-100 to-teal-100 rounded-lg">
-            <Brain size={24} className="text-cyan-600" />
+          <div className="p-2 bg-white/20 rounded-lg">
+            <ModeIcon size={20} className="text-white" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">CounselFlow AI</h3>
-            <p className="text-sm text-gray-500">
-              {mode === 'chat' ? 'Legal Assistant' : 
-               mode === 'research' ? 'Legal Research' :
-               mode === 'contract' ? 'Contract Expert' : 'Document Analysis'}
+            <h3 className="font-semibold text-white capitalize">
+              AI {mode} Assistant
+            </h3>
+            <p className="text-xs text-white/80">
+              Powered by GPT-4 Turbo
             </p>
           </div>
         </div>
         
         <div className="flex items-center gap-2">
-          <select
-            value={currentProvider}
-            onChange={(e) => setProvider(e.target.value)}
-            className="px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearChat}
+            icon={RefreshCw}
+            className="text-white hover:bg-white/20"
           >
-            {availableProviders.map(provider => (
-              <option key={provider} value={provider}>
-                {provider.charAt(0).toUpperCase() + provider.slice(1)}
-              </option>
-            ))}
-          </select>
-          <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
-            <MoreVertical size={16} />
-          </button>
+            Clear
+          </Button>
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="p-4 border-b border-gray-100">
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => handleQuickAction('draft-nda')}
-            className="flex items-center gap-2 px-3 py-2 text-sm bg-gradient-to-r from-cyan-50 to-teal-50 text-cyan-700 rounded-lg hover:from-cyan-100 hover:to-teal-100 transition-all"
-          >
-            <FileText size={16} />
-            Draft NDA
-          </button>
-          <button
-            onClick={() => handleQuickAction('research-precedent')}
-            className="flex items-center gap-2 px-3 py-2 text-sm bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 rounded-lg hover:from-blue-100 hover:to-purple-100 transition-all"
-          >
-            <Scale size={16} />
-            Research
-          </button>
-          <button
-            onClick={() => handleQuickAction('analyze-risk')}
-            className="flex items-center gap-2 px-3 py-2 text-sm bg-gradient-to-r from-orange-50 to-red-50 text-orange-700 rounded-lg hover:from-orange-100 hover:to-red-100 transition-all"
-          >
-            <Shield size={16} />
-            Risk Analysis
-          </button>
-          <button
-            onClick={() => handleQuickAction('compliance-check')}
-            className="flex items-center gap-2 px-3 py-2 text-sm bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 rounded-lg hover:from-green-100 hover:to-emerald-100 transition-all"
-          >
-            <Zap size={16} />
-            Compliance
-          </button>
+      {/* Quick Prompts */}
+      {messages.length <= 1 && (
+        <div className="p-4 border-b border-gray-200 bg-gray-50">
+          <h4 className="text-sm font-medium text-gray-700 mb-2">Quick Prompts:</h4>
+          <div className="flex flex-wrap gap-2">
+            {LEGAL_PROMPTS[mode].map((prompt, index) => (
+              <button
+                key={index}
+                onClick={() => sendMessage(prompt)}
+                className="px-3 py-1.5 text-xs bg-white border border-gray-200 rounded-full hover:bg-gray-50 hover:border-primary-300 transition-colors"
+                disabled={isLoading}
+              >
+                {prompt}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -206,84 +269,94 @@ export function AIChat({ context, mode = 'chat', onActionRequest }: AIChatProps)
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className={`flex gap-3 ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+              className={cn(
+                'flex gap-3',
+                message.role === 'user' ? 'justify-end' : 'justify-start'
+              )}
             >
-              {message.type === 'ai' && (
-                <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-r from-cyan-500 to-teal-500 rounded-full flex items-center justify-center">
+              {message.role === 'assistant' && (
+                <div className={`flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-r ${getModeColor()} flex items-center justify-center`}>
                   <Bot size={16} className="text-white" />
                 </div>
               )}
               
-              <div className={`max-w-[80%] ${message.type === 'user' ? 'order-1' : ''}`}>
-                <div className={`px-4 py-3 rounded-2xl ${
-                  message.type === 'user'
-                    ? 'bg-gradient-to-r from-cyan-500 to-teal-500 text-white'
-                    : 'bg-gray-100 text-gray-900'
-                }`}>
-                  <div className="whitespace-pre-wrap text-sm leading-relaxed">
-                    {message.content}
-                  </div>
-                  
-                  {message.type === 'ai' && message.confidence && (
-                    <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
-                      <span>Confidence: {Math.round(message.confidence * 100)}%</span>
-                      {message.provider && (
-                        <span>• {message.provider}</span>
-                      )}
+              <div
+                className={cn(
+                  'max-w-[80%] rounded-xl px-4 py-3 relative group',
+                  message.role === 'user'
+                    ? 'bg-primary-500 text-white'
+                    : 'bg-white border border-gray-200 text-gray-900'
+                )}
+              >
+                {message.status === 'error' && (
+                  <div className="flex items-center gap-2 mb-2 text-red-600">
+                    <div className="w-4 h-4 rounded-full bg-red-100 flex items-center justify-center">
+                      <div className="w-2 h-2 rounded-full bg-red-500" />
                     </div>
-                  )}
+                    <span className="text-xs font-medium">Error</span>
+                  </div>
+                )}
+                
+                <div className="prose prose-sm max-w-none">
+                  {message.content.split('\n').map((line, index) => (
+                    <p key={index} className={cn(
+                      'mb-2 last:mb-0',
+                      message.role === 'user' ? 'text-white' : 'text-gray-900'
+                    )}>
+                      {line}
+                    </p>
+                  ))}
                 </div>
                 
-                <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
-                  <span>{new Date(message.timestamp).toLocaleTimeString()}</span>
-                  {message.type === 'ai' && (
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => copyMessage(message.content)}
-                        className="p-1 hover:bg-gray-100 rounded transition-colors"
-                        title="Copy message"
-                      >
-                        <Copy size={12} />
-                      </button>
-                      <button
-                        className="p-1 hover:bg-gray-100 rounded transition-colors"
-                        title="Good response"
-                      >
-                        <ThumbsUp size={12} />
-                      </button>
-                      <button
-                        className="p-1 hover:bg-gray-100 rounded transition-colors"
-                        title="Poor response"
-                      >
-                        <ThumbsDown size={12} />
-                      </button>
-                    </div>
-                  )}
-                </div>
+                {message.role === 'assistant' && (
+                  <div className="flex items-center gap-2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      variant="ghost"
+                      size="xs"
+                      onClick={() => copyToClipboard(message.content)}
+                      icon={Copy}
+                      className="text-gray-400 hover:text-gray-600"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="xs"
+                      icon={ThumbsUp}
+                      className="text-gray-400 hover:text-green-600"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="xs"
+                      icon={ThumbsDown}
+                      className="text-gray-400 hover:text-red-600"
+                    />
+                  </div>
+                )}
               </div>
               
-              {message.type === 'user' && (
-                <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                  <User size={16} className="text-white" />
+              {message.role === 'user' && (
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
+                  <User size={16} className="text-gray-600" />
                 </div>
               )}
             </motion.div>
           ))}
         </AnimatePresence>
-        
+
+        {/* Typing Indicator */}
         {isTyping && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="flex gap-3"
           >
-            <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-r from-cyan-500 to-teal-500 rounded-full flex items-center justify-center">
+            <div className={`flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-r ${getModeColor()} flex items-center justify-center`}>
               <Bot size={16} className="text-white" />
             </div>
-            <div className="bg-gray-100 px-4 py-3 rounded-2xl">
+            <div className="bg-white border border-gray-200 rounded-xl px-4 py-3">
               <div className="flex items-center gap-1">
-                <Loader className="animate-spin" size={16} />
-                <span className="text-sm text-gray-600 ml-2">Thinking...</span>
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
               </div>
             </div>
           </motion.div>
@@ -293,35 +366,43 @@ export function AIChat({ context, mode = 'chat', onActionRequest }: AIChatProps)
       </div>
 
       {/* Input */}
-      <div className="p-4 border-t border-gray-200">
-        {error && (
-          <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-            {error}
-          </div>
-        )}
-        
-        <div className="flex gap-3">
+      <div className="border-t border-gray-200 p-4">
+        <div className="flex gap-2">
           <div className="flex-1 relative">
             <input
               ref={inputRef}
               type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Ask me anything legal..."
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent resize-none"
-              disabled={isTyping}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
+              placeholder={`Ask your legal ${mode} question...`}
+              className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none transition-all"
+              disabled={isLoading}
             />
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+              <Sparkles size={16} className="text-gray-400" />
+            </div>
           </div>
-          <button
-            onClick={handleSendMessage}
-            disabled={!inputValue.trim() || isTyping}
-            className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-teal-500 text-white rounded-xl hover:from-cyan-600 hover:to-teal-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          
+          <Button
+            onClick={() => sendMessage()}
+            disabled={!input.trim() || isLoading}
+            icon={isLoading ? Loader2 : Send}
+            className={cn(
+              'shrink-0',
+              isLoading && 'animate-pulse'
+            )}
+            size="lg"
           >
-            <Send size={20} />
-          </button>
+            {isLoading ? 'Sending...' : 'Send'}
+          </Button>
+        </div>
+        
+        <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
+          <span>AI responses are generated and should be verified</span>
+          <span>{input.length}/2000</span>
         </div>
       </div>
-    </div>
+    </Card>
   )
 }

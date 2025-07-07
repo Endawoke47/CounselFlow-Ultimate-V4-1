@@ -1,124 +1,173 @@
-import React from 'react'
-import { motion } from 'framer-motion'
-import { Loader2 } from 'lucide-react'
+import React, { forwardRef } from 'react'
+import { LucideIcon } from 'lucide-react'
+import { motion, HTMLMotionProps } from 'framer-motion'
+import { cn } from '../../utils/cn'
 
-interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onAnimationStart' | 'onDragStart' | 'onDragEnd' | 'onDrag' | 'onDragEnter' | 'onDragExit' | 'onDragLeave' | 'onDragOver' | 'onDrop'> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success'
+export interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'size'> {
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success' | 'warning'
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
-  loading?: boolean
-  icon?: any
+  icon?: LucideIcon
   iconPosition?: 'left' | 'right'
+  loading?: boolean
   fullWidth?: boolean
   children?: React.ReactNode
 }
 
-export function Button({
-  variant = 'primary',
-  size = 'md',
-  loading = false,
-  icon: Icon,
-  iconPosition = 'left',
-  fullWidth = false,
-  disabled,
-  className = '',
-  children,
-  onClick,
-  ...props
-}: ButtonProps) {
-  const baseClasses = 'inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2'
-  
-  const sizeClasses = {
-    xs: 'px-2 py-1 text-xs gap-1',
-    sm: 'px-3 py-2 text-sm gap-2',
-    md: 'px-4 py-2.5 text-sm gap-2',
-    lg: 'px-6 py-3 text-base gap-3',
-    xl: 'px-8 py-4 text-lg gap-3'
+const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  ({
+    className,
+    variant = 'primary',
+    size = 'md',
+    icon: Icon,
+    iconPosition = 'left',
+    loading = false,
+    fullWidth = false,
+    disabled,
+    children,
+    ...props
+  }, ref) => {
+    const baseClasses = [
+      // Base styles
+      'inline-flex items-center justify-center gap-2',
+      'font-semibold text-center transition-all duration-200 ease-out',
+      'focus:outline-none focus:ring-4 focus:ring-offset-0',
+      'disabled:pointer-events-none disabled:opacity-50',
+      'select-none relative overflow-hidden',
+      // Interactive states
+      'active:scale-[0.98] transform-gpu',
+    ]
+
+    const variants = {
+      primary: [
+        'bg-gradient-to-r from-primary-600 to-primary-700',
+        'text-white shadow-lg shadow-primary-500/25',
+        'hover:from-primary-700 hover:to-primary-800',
+        'hover:shadow-xl hover:shadow-primary-500/30',
+        'focus:ring-primary-500/50',
+        'active:from-primary-800 active:to-primary-900',
+      ],
+      secondary: [
+        'bg-gradient-to-r from-secondary-500 to-secondary-600',
+        'text-white shadow-lg shadow-secondary-500/25',
+        'hover:from-secondary-600 hover:to-secondary-700',
+        'hover:shadow-xl hover:shadow-secondary-500/30',
+        'focus:ring-secondary-500/50',
+        'active:from-secondary-700 active:to-secondary-800',
+      ],
+      outline: [
+        'border-2 border-primary-500 bg-white text-primary-700',
+        'shadow-sm hover:bg-primary-50',
+        'hover:border-primary-600 hover:text-primary-800',
+        'hover:shadow-md focus:ring-primary-500/50',
+        'active:bg-primary-100',
+      ],
+      ghost: [
+        'text-gray-700 hover:text-primary-700',
+        'hover:bg-primary-50/50 active:bg-primary-100/50',
+        'focus:ring-primary-500/30',
+      ],
+      danger: [
+        'bg-gradient-to-r from-red-500 to-red-600',
+        'text-white shadow-lg shadow-red-500/25',
+        'hover:from-red-600 hover:to-red-700',
+        'hover:shadow-xl hover:shadow-red-500/30',
+        'focus:ring-red-500/50',
+        'active:from-red-700 active:to-red-800',
+      ],
+      success: [
+        'bg-gradient-to-r from-green-500 to-green-600',
+        'text-white shadow-lg shadow-green-500/25',
+        'hover:from-green-600 hover:to-green-700',
+        'hover:shadow-xl hover:shadow-green-500/30',
+        'focus:ring-green-500/50',
+        'active:from-green-700 active:to-green-800',
+      ],
+      warning: [
+        'bg-gradient-to-r from-orange-500 to-orange-600',
+        'text-white shadow-lg shadow-orange-500/25',
+        'hover:from-orange-600 hover:to-orange-700',
+        'hover:shadow-xl hover:shadow-orange-500/30',
+        'focus:ring-orange-500/50',
+        'active:from-orange-700 active:to-orange-800',
+      ],
+    }
+
+    const sizes = {
+      xs: 'px-2.5 py-1.5 text-xs rounded-md gap-1',
+      sm: 'px-3 py-2 text-sm rounded-lg gap-1.5',
+      md: 'px-4 py-2.5 text-sm rounded-lg gap-2',
+      lg: 'px-6 py-3 text-base rounded-xl gap-2',
+      xl: 'px-8 py-4 text-lg rounded-xl gap-3',
+    }
+
+    const iconSizes = {
+      xs: 12,
+      sm: 14,
+      md: 16,
+      lg: 18,
+      xl: 20,
+    }
+
+    const LoadingSpinner = () => (
+      <motion.div
+        className="w-4 h-4 border-2 border-current border-t-transparent rounded-full"
+        animate={{ rotate: 360 }}
+        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+      />
+    )
+
+    const isDisabled = disabled || loading
+
+    return (
+      <motion.button
+        ref={ref}
+        className={cn(
+          baseClasses,
+          variants[variant],
+          sizes[size],
+          fullWidth && 'w-full',
+          className
+        )}
+        disabled={isDisabled}
+        whileHover={!isDisabled ? { scale: 1.02 } : undefined}
+        whileTap={!isDisabled ? { scale: 0.98 } : undefined}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.2, ease: 'easeOut' }}
+        {...props}
+      >
+        {/* Shimmer effect for primary and secondary buttons */}
+        {(variant === 'primary' || variant === 'secondary') && !isDisabled && (
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+            initial={{ x: '-100%' }}
+            whileHover={{
+              x: '100%',
+              transition: { duration: 0.6, ease: 'easeInOut' }
+            }}
+          />
+        )}
+
+        {loading && <LoadingSpinner />}
+        
+        {Icon && iconPosition === 'left' && !loading && (
+          <Icon size={iconSizes[size]} className="flex-shrink-0" />
+        )}
+        
+        {children && (
+          <span className="relative z-10 truncate">
+            {children}
+          </span>
+        )}
+        
+        {Icon && iconPosition === 'right' && !loading && (
+          <Icon size={iconSizes[size]} className="flex-shrink-0" />
+        )}
+      </motion.button>
+    )
   }
+)
 
-  const variantClasses = {
-    primary: 'bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl focus:ring-cyan-500',
-    secondary: 'bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 shadow-sm hover:shadow-md focus:ring-gray-500',
-    outline: 'border-2 border-cyan-500 text-cyan-600 hover:bg-cyan-50 focus:ring-cyan-500',
-    ghost: 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:ring-gray-500',
-    danger: 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg hover:shadow-xl focus:ring-red-500',
-    success: 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-lg hover:shadow-xl focus:ring-green-500'
-  }
+Button.displayName = 'Button'
 
-  const disabledClasses = 'opacity-50 cursor-not-allowed pointer-events-none'
-
-  const iconSize = {
-    xs: 12,
-    sm: 14,
-    md: 16,
-    lg: 18,
-    xl: 20
-  }
-
-  const isDisabled = disabled || loading
-
-  return (
-    <motion.button
-      whileHover={!isDisabled ? { scale: 1.02 } : undefined}
-      whileTap={!isDisabled ? { scale: 0.98 } : undefined}
-      className={`
-        ${baseClasses}
-        ${sizeClasses[size]}
-        ${variantClasses[variant]}
-        ${isDisabled ? disabledClasses : ''}
-        ${fullWidth ? 'w-full' : ''}
-        ${className}
-      `}
-      disabled={isDisabled}
-      onClick={onClick}
-      {...props}
-    >
-      {loading ? (
-        <>
-          <Loader2 size={iconSize[size]} className="animate-spin" />
-          {children && <span>Loading...</span>}
-        </>
-      ) : (
-        <>
-          {Icon && iconPosition === 'left' && (
-            <Icon size={iconSize[size]} />
-          )}
-          {children && <span>{children}</span>}
-          {Icon && iconPosition === 'right' && (
-            <Icon size={iconSize[size]} />
-          )}
-          {Icon && !children && (
-            <Icon size={iconSize[size]} />
-          )}
-        </>
-      )}
-    </motion.button>
-  )
-}
-
-export function ButtonGroup({ 
-  children, 
-  className = '' 
-}: { 
-  children: React.ReactNode
-  className?: string 
-}) {
-  return (
-    <div className={`inline-flex rounded-lg shadow-sm ${className}`} role="group">
-      {React.Children.map(children, (child, index) => {
-        if (React.isValidElement(child)) {
-          const isFirst = index === 0
-          const isLast = index === React.Children.count(children) - 1
-          
-          return React.cloneElement(child as React.ReactElement, {
-            className: `${(child as any).props.className || ''} ${
-              !isFirst && !isLast ? 'rounded-none border-x-0' :
-              isFirst ? 'rounded-r-none' :
-              isLast ? 'rounded-l-none border-l-0' : ''
-            }`
-          })
-        }
-        return child
-      })}
-    </div>
-  )
-}
+export { Button }
