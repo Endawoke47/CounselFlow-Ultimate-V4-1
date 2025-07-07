@@ -89,7 +89,7 @@ export async function seedDatabase(dataSource: DataSource) {
   console.log('✅ Created demo users');
 
   // Create demo matters
-  const matters = await matterRepository.save([
+  const matterData = [
     {
       title: 'TechCorp Acquisition of StartupAI',
       description: 'Complete acquisition transaction including due diligence, contract negotiation, and regulatory approval',
@@ -186,12 +186,22 @@ export async function seedDatabase(dataSource: DataSource) {
         contractType: 'Software License'
       }
     }
-  ]);
+  ];
+
+  const matters = [];
+  for (const matterItem of matterData) {
+    const matter = matterRepository.create({
+      ...matterItem,
+      tags: Array.isArray(matterItem.tags) ? matterItem.tags.join(',') : matterItem.tags,
+      customFields: typeof matterItem.customFields === 'object' ? JSON.stringify(matterItem.customFields) : matterItem.customFields
+    });
+    matters.push(await matterRepository.save(matter));
+  }
 
   console.log('✅ Created demo matters');
 
   // Create demo contracts
-  const contracts = await contractRepository.save([
+  const contractData = [
     {
       title: 'TechCorp - StartupAI Acquisition Agreement',
       description: 'Stock purchase agreement for acquisition of StartupAI by TechCorp Industries',
@@ -349,7 +359,19 @@ export async function seedDatabase(dataSource: DataSource) {
       assignedLawyerId: users[2].id,
       matterId: matters[4].id
     }
-  ]);
+  ];
+
+  const contracts = [];
+  for (const contractItem of contractData) {
+    const contract = contractRepository.create({
+      ...contractItem,
+      parties: Array.isArray(contractItem.parties) ? contractItem.parties.join(',') : contractItem.parties,
+      tags: Array.isArray(contractItem.tags) ? contractItem.tags.join(',') : contractItem.tags,
+      keyTerms: typeof contractItem.keyTerms === 'object' ? JSON.stringify(contractItem.keyTerms) : contractItem.keyTerms,
+      riskAssessment: typeof contractItem.riskAssessment === 'object' ? JSON.stringify(contractItem.riskAssessment) : contractItem.riskAssessment
+    });
+    contracts.push(await contractRepository.save(contract));
+  }
 
   console.log('✅ Created demo contracts');
   console.log('🎉 Database seeding completed successfully!');

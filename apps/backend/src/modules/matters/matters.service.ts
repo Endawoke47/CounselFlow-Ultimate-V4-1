@@ -13,7 +13,10 @@ export class MattersService {
   ) {}
 
   async create(createMatterDto: CreateMatterDto): Promise<Matter> {
-    const matter = this.mattersRepository.create(createMatterDto);
+    const matter = this.mattersRepository.create({
+      ...createMatterDto,
+      tags: Array.isArray(createMatterDto.tags) ? createMatterDto.tags.join(',') : createMatterDto.tags
+    });
     return this.mattersRepository.save(matter);
   }
 
@@ -38,7 +41,12 @@ export class MattersService {
   }
 
   async update(id: string, updateMatterDto: UpdateMatterDto): Promise<Matter> {
-    await this.mattersRepository.update(id, updateMatterDto);
+    const updateData = {
+      ...updateMatterDto,
+      tags: Array.isArray(updateMatterDto.tags) ? updateMatterDto.tags.join(',') : updateMatterDto.tags,
+      customFields: typeof updateMatterDto.customFields === 'object' ? JSON.stringify(updateMatterDto.customFields) : updateMatterDto.customFields
+    };
+    await this.mattersRepository.update(id, updateData);
     return this.findOne(id);
   }
 

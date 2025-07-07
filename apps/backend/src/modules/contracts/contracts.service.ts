@@ -13,7 +13,11 @@ export class ContractsService {
   ) {}
 
   async create(createContractDto: CreateContractDto): Promise<Contract> {
-    const contract = this.contractsRepository.create(createContractDto);
+    const contract = this.contractsRepository.create({
+      ...createContractDto,
+      parties: Array.isArray(createContractDto.parties) ? createContractDto.parties.join(',') : createContractDto.parties,
+      tags: Array.isArray(createContractDto.tags) ? createContractDto.tags.join(',') : createContractDto.tags
+    });
     return this.contractsRepository.save(contract);
   }
 
@@ -38,7 +42,12 @@ export class ContractsService {
   }
 
   async update(id: string, updateContractDto: UpdateContractDto): Promise<Contract> {
-    await this.contractsRepository.update(id, updateContractDto);
+    const updateData = {
+      ...updateContractDto,
+      parties: Array.isArray(updateContractDto.parties) ? updateContractDto.parties.join(',') : updateContractDto.parties,
+      tags: Array.isArray(updateContractDto.tags) ? updateContractDto.tags.join(',') : updateContractDto.tags
+    };
+    await this.contractsRepository.update(id, updateData);
     return this.findOne(id);
   }
 
