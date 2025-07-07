@@ -39,19 +39,20 @@ export function ComponentShowcase() {
   ]
 
   return (
-    <div className="px-4 lg:px-6 space-y-8">
+    <div className="px-4 lg:px-6 bg-gradient-to-br from-teal-50 to-white min-h-screen">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-teal-700 to-cyan-600 bg-clip-text text-transparent mb-2">
           CounselFlow Component Showcase
         </h1>
-        <p className="text-gray-600">
+        <p className="text-teal-600 text-lg font-medium">
           All graphics, animations, and interactive components working perfectly!
         </p>
       </div>
 
-      {/* Animated Stats Grid */}
-      <section>
-        <h2 className="text-2xl font-semibold text-gray-900 mb-6">Animated Statistics</h2>
+      <div className="space-y-8">
+        {/* Animated Stats Grid */}
+        <section>
+          <h2 className="text-2xl font-semibold text-teal-800 mb-6">Animated Statistics</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[
             { name: 'Active Matters', value: '156', icon: Briefcase, color: 'bg-teal-500', change: '+12%' },
@@ -236,6 +237,7 @@ export function ComponentShowcase() {
           CounselFlow is now fully operational with beautiful UI, interactive charts, animations, and comprehensive legal management features.
         </p>
       </motion.div>
+      </div>
     </div>
   )
 }

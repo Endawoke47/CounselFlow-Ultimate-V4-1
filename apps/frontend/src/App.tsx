@@ -15,10 +15,10 @@ import { IPManagementPage } from './pages/IPManagementPage'
 import { CompliancePage } from './pages/CompliancePage'
 import { PrivacyPage } from './pages/PrivacyPage'
 import { DisputesPage } from './pages/DisputesPage'
-import { SpendAnalyticsPage } from './pages/SpendAnalyticsPage'
-import { IntakePage } from './pages/IntakePage'
+import { SpendAnalyticsPage } from './pages/SpendAnalyticsPageNew'
+import { IntakePage } from './pages/IntakePageNew'
 import { EntityManagementPage } from './pages/EntityManagementPage'
-import { KnowledgeManagementPage } from './pages/KnowledgeManagementPage'
+import { KnowledgeManagementPage } from './pages/KnowledgeManagementPageNew'
 import { LoadingSpinner } from './components/ui/LoadingSpinner'
 
 export function App() {

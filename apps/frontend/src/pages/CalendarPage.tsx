@@ -770,14 +770,15 @@ const CalendarPage: React.FC = () => {
   const today = new Date();
 
   return (
-    <div className="space-y-6">
+    <div className="px-4 lg:px-6 bg-gradient-to-br from-teal-50 to-white min-h-screen">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Legal Calendar</h1>
-          <p className="text-gray-600 mt-1">
-            Manage your legal schedule and deadlines • 
-            <span className="font-medium text-primary"> {events.length} events</span> from 
+      <div className="mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-teal-700 to-cyan-600 bg-clip-text text-transparent">Legal Calendar</h1>
+            <p className="text-teal-600 mt-2 text-lg font-medium">
+              Manage your legal schedule and deadlines • 
+              <span className="font-semibold text-teal-700"> {events.length} events</span> from 
             <span className="font-medium text-primary"> {mockMatters.length} active matters</span> and 
             <span className="font-medium text-primary"> {mockContracts.length} contracts</span>
           </p>
