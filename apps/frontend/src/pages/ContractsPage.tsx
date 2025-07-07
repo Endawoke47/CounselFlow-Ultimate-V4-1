@@ -1,171 +1,174 @@
 import React, { useState } from 'react'
-import { Plus, Search, Filter, FileText, Calendar, DollarSign, User, MoreVertical, TrendingUp, CheckCircle, Clock, AlertTriangle, Eye, Edit, Download } from 'lucide-react'
+import { Plus, Search, Filter, FileText, Calendar, DollarSign, User, MoreVertical, Brain, AlertTriangle, TrendingUp, Clock, Download, Eye, Edit, Trash2, Upload, BarChart3, Zap, CheckCircle, AlertCircle, Activity, X } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { Button, Card, Input, Badge, Modal } from '../components/ui/UIComponents'
+import { logger } from '../services/logger'
+import { Tabs, TabPanel } from '../components/ui/Tabs'
+import { Button } from '../components/ui/Button'
+import { Modal, ModalHeader, ModalBody, ModalFooter } from '../components/ui/Modal'
+import { SearchInput, SearchFilters } from '../components/ui/SearchInput'
 
 interface Contract {
   id: string
   title: string
   client: string
-  type: 'license' | 'service' | 'nda' | 'employment' | 'vendor' | 'partnership'
-  status: 'draft' | 'pending' | 'executed' | 'expired' | 'terminated'
+  type: string
+  status: 'draft' | 'pending' | 'executed' | 'expired' | 'review'
   value: number
   startDate: string
   endDate: string
   lastModified: string
   description: string
-  priority: 'low' | 'medium' | 'high' | 'critical'
-  assignedTo: string
-  renewalDate?: string
   riskLevel: 'low' | 'medium' | 'high'
-}
-
-const statusConfig = {
-  draft: { icon: Edit, color: 'info' as const },
-  pending: { icon: Clock, color: 'warning' as const },
-  executed: { icon: CheckCircle, color: 'success' as const },
-  expired: { icon: AlertTriangle, color: 'danger' as const },
-  terminated: { icon: AlertTriangle, color: 'danger' as const }
-}
-
-const priorityConfig = {
-  low: { color: 'info' as const },
-  medium: { color: 'warning' as const },
-  high: { color: 'danger' as const },
-  critical: { color: 'danger' as const }
-}
-
-const riskConfig = {
-  low: { color: 'success' as const },
-  medium: { color: 'warning' as const },
-  high: { color: 'danger' as const }
+  aiInsights: string[]
+  progress: number
+  assignedTo: string
+  priority: 'low' | 'medium' | 'high'
 }
 
 export function ContractsPage() {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState('all')
-  const [typeFilter, setTypeFilter] = useState('all')
-  const [selectedContract, setSelectedContract] = useState<Contract | null>(null)
-  const [showCreateModal, setShowCreateModal] = useState(false)
-
-  const mockContracts: Contract[] = [
+  const [activeTab, setActiveTab] = useState('all')
+  const [showNewContractModal, setShowNewContractModal] = useState(false)
+  const [showFilters, setShowFilters] = useState(false)
+  const [contracts] = useState<Contract[]>([
     {
       id: '1',
-      title: 'Software License Agreement - Enterprise Suite',
+      title: 'Software License Agreement',
       client: 'TechCorp Industries',
-      type: 'license',
+      type: 'License',
       status: 'executed',
       value: 150000,
       startDate: '2024-01-01',
       endDate: '2024-12-31',
       lastModified: '2024-01-15',
-      description: 'Annual software licensing agreement for enterprise suite with maintenance and support',
-      priority: 'high',
+      description: 'Annual software licensing agreement for enterprise suite',
+      riskLevel: 'low',
+      aiInsights: ['Standard terms accepted', 'Auto-renewal clause active'],
+      progress: 100,
       assignedTo: 'Sarah Johnson',
-      renewalDate: '2024-11-01',
-      riskLevel: 'low'
+      priority: 'medium'
     },
     {
       id: '2',
-      title: 'Professional Services Agreement',
+      title: 'Service Agreement',
       client: 'Global Services LLC',
-      type: 'service',
-      status: 'draft',
+      type: 'Service',
+      status: 'review',
       value: 75000,
       startDate: '2024-02-01',
       endDate: '2024-07-31',
       lastModified: '2024-01-10',
-      description: 'Professional services agreement for consulting work and implementation',
-      priority: 'medium',
-      assignedTo: 'Michael Brown',
-      riskLevel: 'medium'
+      description: 'Professional services agreement for consulting work',
+      riskLevel: 'medium',
+      aiInsights: ['Liability clause needs review', 'Payment terms favorable'],
+      progress: 65,
+      assignedTo: 'Michael Chen',
+      priority: 'high'
     },
     {
       id: '3',
-      title: 'Mutual Non-Disclosure Agreement',
+      title: 'Non-Disclosure Agreement',
       client: 'Innovation Labs',
-      type: 'nda',
+      type: 'NDA',
       status: 'pending',
       value: 0,
       startDate: '2024-01-15',
       endDate: '2025-01-15',
       lastModified: '2024-01-12',
-      description: 'Mutual non-disclosure agreement for partnership discussions and technology sharing',
-      priority: 'medium',
-      assignedTo: 'Jennifer Davis',
-      riskLevel: 'low'
+      description: 'Mutual non-disclosure agreement for partnership discussions',
+      riskLevel: 'low',
+      aiInsights: ['Standard NDA template', 'Duration within normal range'],
+      progress: 85,
+      assignedTo: 'Emma Davis',
+      priority: 'low'
     },
     {
       id: '4',
-      title: 'Vendor Supply Agreement',
-      client: 'Manufacturing Corp',
-      type: 'vendor',
-      status: 'executed',
-      value: 250000,
-      startDate: '2023-06-01',
-      endDate: '2025-06-01',
-      lastModified: '2024-01-05',
-      description: 'Multi-year vendor supply agreement with volume discounts and performance metrics',
-      priority: 'high',
+      title: 'Master Service Agreement',
+      client: 'Fortune 500 Corp',
+      type: 'MSA',
+      status: 'draft',
+      value: 2400000,
+      startDate: '2024-03-01',
+      endDate: '2027-02-28',
+      lastModified: '2024-01-20',
+      description: 'Multi-year master services agreement with enterprise client',
+      riskLevel: 'high',
+      aiInsights: ['Indemnification clause risky', 'IP ownership unclear', 'High value requires exec review'],
+      progress: 45,
       assignedTo: 'David Wilson',
-      renewalDate: '2025-03-01',
-      riskLevel: 'medium'
+      priority: 'high'
     },
     {
       id: '5',
-      title: 'Employment Agreement - Executive',
-      client: 'StartupCo LLC',
-      type: 'employment',
+      title: 'Partnership Agreement',
+      client: 'StartupCo Ltd',
+      type: 'Partnership',
       status: 'executed',
-      value: 180000,
+      value: 500000,
       startDate: '2024-01-01',
-      endDate: '2026-01-01',
-      lastModified: '2023-12-20',
-      description: 'Executive employment agreement with equity compensation and non-compete clauses',
-      priority: 'critical',
-      assignedTo: 'Lisa Rodriguez',
-      riskLevel: 'high'
+      endDate: '2026-12-31',
+      lastModified: '2024-01-05',
+      description: 'Strategic partnership for technology collaboration',
+      riskLevel: 'medium',
+      aiInsights: ['Revenue sharing model defined', 'Termination clauses standard'],
+      progress: 100,
+      assignedTo: 'Lisa Thompson',
+      priority: 'medium'
+    },
+    {
+      id: '6',
+      title: 'Vendor Agreement',
+      client: 'Supply Chain Inc',
+      type: 'Vendor',
+      status: 'expired',
+      value: 120000,
+      startDate: '2023-06-01',
+      endDate: '2024-01-01',
+      lastModified: '2023-12-15',
+      description: 'Vendor services agreement for logistics support',
+      riskLevel: 'low',
+      aiInsights: ['Contract expired', 'Renewal recommended'],
+      progress: 100,
+      assignedTo: 'James Anderson',
+      priority: 'low'
     }
+  ])
+
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filterStatus, setFilterStatus] = useState('all')
+  const [selectedView, setSelectedView] = useState<'grid' | 'list'>('grid')
+
+  const tabs = [
+    { id: 'all', label: 'All Contracts', icon: FileText, badge: contracts.length.toString() },
+    { id: 'executed', label: 'Active', icon: CheckCircle, badge: contracts.filter(c => c.status === 'executed').length.toString() },
+    { id: 'review', label: 'Review', icon: AlertCircle, badge: contracts.filter(c => c.status === 'review').length.toString() },
+    { id: 'pending', label: 'Pending', icon: Clock, badge: contracts.filter(c => c.status === 'pending').length.toString() },
   ]
 
-  const filteredContracts = mockContracts.filter(contract => {
+  const handleSearch = (query: string) => {
+    setSearchTerm(query)
+  }
+
+  const filteredContracts = contracts.filter(contract => {
     const matchesSearch = contract.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         contract.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         contract.type.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesStatus = statusFilter === 'all' || contract.status === statusFilter
-    const matchesType = typeFilter === 'all' || contract.type === typeFilter
-    return matchesSearch && matchesStatus && matchesType
+                         contract.client.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesStatus = filterStatus === 'all' || contract.status === filterStatus
+    return matchesSearch && matchesStatus
   })
 
-  const formatCurrency = (amount: number) => {
-    if (amount === 0) return 'No value'
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0
-    }).format(amount)
-  }
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    })
-  }
-
-  const getStatusIcon = (status: Contract['status']) => {
-    const IconComponent = statusConfig[status].icon
-    return <IconComponent className="h-4 w-4" />
-  }
-
-  const totalValue = mockContracts.reduce((sum, contract) => sum + contract.value, 0)
-  const activeContracts = mockContracts.filter(c => c.status === 'executed').length
-  const pendingContracts = mockContracts.filter(c => c.status === 'pending').length
-  const draftContracts = mockContracts.filter(c => c.status === 'draft').length
+  // Contract Analytics
+  const totalValue = contracts.reduce((sum, contract) => sum + contract.value, 0)
+  const highRiskContracts = contracts.filter(c => c.riskLevel === 'high').length
+  const pendingContracts = contracts.filter(c => c.status === 'pending' || c.status === 'review').length
+  const expiringContracts = contracts.filter(c => {
+    const endDate = new Date(c.endDate)
+    const now = new Date()
+    const monthsUntilExpiry = (endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24 * 30)
+    return monthsUntilExpiry <= 3 && monthsUntilExpiry > 0
+  }).length
 
   return (
-    <div className="px-4 lg:px-6 bg-gradient-to-br from-teal-50 to-white min-h-screen">
+    <div className="px-4 lg:px-6 bg-gradient-to-br from-legal-50 to-white min-h-screen">
       {/* Header */}
       <div className="mb-8">
         <motion.div
@@ -175,402 +178,480 @@ export function ContractsPage() {
           className="flex items-center justify-between mb-6"
         >
           <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-teal-700 to-cyan-600 bg-clip-text text-transparent">
-              Contract Management
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-counsel-700 to-legal-600 bg-clip-text text-transparent">
+              Contract Lifecycle Management
             </h1>
-            <p className="text-teal-600 mt-2 text-lg font-medium">
-              Comprehensive contract lifecycle management and analysis
+            <p className="text-counsel-600 mt-2 text-lg font-medium">
+              AI-powered contract analysis, tracking, and risk management
             </p>
           </div>
           <div className="flex items-center space-x-3">
-            <motion.button 
-              className="flex items-center space-x-2 px-4 py-2 bg-white/80 backdrop-blur-sm border border-teal-200 rounded-xl text-teal-700 font-semibold hover:bg-teal-50 transition-all duration-200"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+            <Button
+              variant="secondary"
+              size="md"
+              icon={Upload}
             >
-              <Calendar className="h-4 w-4" />
-              <span>Renewals</span>
-            </motion.button>
-            <motion.button 
-              className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white rounded-xl font-semibold shadow-lg transition-all duration-200"
-              onClick={() => setShowCreateModal(true)}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              Import
+            </Button>
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => setShowNewContractModal(true)}
+              icon={Plus}
             >
-              <Plus className="h-4 w-4" />
-              <span>New Contract</span>
-            </motion.button>
+              New Contract
+            </Button>
           </div>
         </motion.div>
 
         {/* Analytics Cards */}
         <motion.div 
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+          className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.6 }}
         >
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-teal-200/50 shadow-lg">
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-counsel-200/50 shadow-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-teal-600">Total Contracts</p>
-                <p className="text-3xl font-bold text-teal-800">{mockContracts.length}</p>
-              </div>
-              <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl">
-                <FileText className="h-6 w-6 text-white" />
-              </div>
-            </div>
-            <div className="mt-2 flex items-center text-sm">
-              <TrendingUp className="h-4 w-4 text-blue-500 mr-1" />
-              <span className="text-blue-600 font-medium">+8%</span>
-              <span className="text-teal-500 ml-1">vs last quarter</span>
-            </div>
-          </div>
-
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-teal-200/50 shadow-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold text-teal-600">Active Contracts</p>
-                <p className="text-3xl font-bold text-teal-800">{activeContracts}</p>
+                <p className="text-sm font-semibold text-counsel-600">Total Portfolio Value</p>
+                <p className="text-3xl font-bold text-counsel-800">${(totalValue / 1000000).toFixed(1)}M</p>
               </div>
               <div className="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-xl">
-                <CheckCircle className="h-6 w-6 text-white" />
-              </div>
-            </div>
-            <div className="mt-2 flex items-center text-sm">
-              <span className="text-green-600 font-medium">Executed</span>
-            </div>
-          </div>
-
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-teal-200/50 shadow-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold text-teal-600">Total Value</p>
-                <p className="text-3xl font-bold text-teal-800">{formatCurrency(totalValue)}</p>
-              </div>
-              <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl">
                 <DollarSign className="h-6 w-6 text-white" />
               </div>
             </div>
             <div className="mt-2 flex items-center text-sm">
-              <span className="text-purple-600 font-medium">Portfolio value</span>
+              <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
+              <span className="text-green-600 font-medium">+12%</span>
+              <span className="text-counsel-500 ml-1">this quarter</span>
             </div>
           </div>
 
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-teal-200/50 shadow-lg">
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-counsel-200/50 shadow-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-teal-600">Pending Review</p>
-                <p className="text-3xl font-bold text-teal-800">{pendingContracts + draftContracts}</p>
+                <p className="text-sm font-semibold text-counsel-600">Active Contracts</p>
+                <p className="text-3xl font-bold text-counsel-800">{contracts.length}</p>
+              </div>
+              <div className="p-3 bg-gradient-to-br from-counsel-500 to-counsel-600 rounded-xl">
+                <FileText className="h-6 w-6 text-white" />
+              </div>
+            </div>
+            <div className="mt-2 flex items-center text-sm">
+              <span className="text-counsel-600 font-medium">{pendingContracts} pending review</span>
+            </div>
+          </div>
+
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-counsel-200/50 shadow-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-counsel-600">High Risk Items</p>
+                <p className="text-3xl font-bold text-counsel-800">{highRiskContracts}</p>
+              </div>
+              <div className="p-3 bg-gradient-to-br from-red-500 to-red-600 rounded-xl">
+                <AlertTriangle className="h-6 w-6 text-white" />
+              </div>
+            </div>
+            <div className="mt-2 flex items-center text-sm">
+              <span className="text-red-600 font-medium">Require attention</span>
+            </div>
+          </div>
+
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-counsel-200/50 shadow-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-counsel-600">Expiring Soon</p>
+                <p className="text-3xl font-bold text-counsel-800">{expiringContracts}</p>
               </div>
               <div className="p-3 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl">
                 <Clock className="h-6 w-6 text-white" />
               </div>
             </div>
             <div className="mt-2 flex items-center text-sm">
-              <span className="text-orange-600 font-medium">Need attention</span>
+              <span className="text-orange-600 font-medium">Next 3 months</span>
             </div>
           </div>
         </motion.div>
 
-        {/* Filters */}
+        {/* Navigation Tabs */}
         <motion.div 
-          className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-teal-200/50 shadow-lg mb-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.6 }}
-        >
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
-            <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 flex-1">
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-teal-500" />
-                <Input
-                  type="text"
-                  placeholder="Search contracts, clients, or types..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 border-teal-200 focus:border-teal-500 focus:ring-teal-500/20"
-                />
-              </div>
-              
-              <div className="flex items-center space-x-3">
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="px-3 py-2 border border-teal-200 rounded-xl text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 bg-white/50 backdrop-blur-sm"
-                >
-                  <option value="all">All Status</option>
-                  <option value="draft">Draft</option>
-                  <option value="pending">Pending</option>
-                  <option value="executed">Executed</option>
-                  <option value="expired">Expired</option>
-                  <option value="terminated">Terminated</option>
-                </select>
-                
-                <select
-                  value={typeFilter}
-                  onChange={(e) => setTypeFilter(e.target.value)}
-                  className="px-3 py-2 border border-teal-200 rounded-xl text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 bg-white/50 backdrop-blur-sm"
-                >
-                  <option value="all">All Types</option>
-                  <option value="license">License</option>
-                  <option value="service">Service</option>
-                  <option value="nda">NDA</option>
-                  <option value="employment">Employment</option>
-                  <option value="vendor">Vendor</option>
-                  <option value="partnership">Partnership</option>
-                </select>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Contracts Grid */}
-        <motion.div
+          className="mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.6 }}
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredContracts.map((contract, index) => (
-              <motion.div
-                key={contract.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-teal-200/50 shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer group"
-                onClick={() => setSelectedContract(contract)}
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="p-3 bg-gradient-to-br from-teal-500 to-cyan-500 rounded-xl group-hover:scale-110 transition-transform duration-200">
-                      <FileText className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-teal-900 group-hover:text-teal-700 transition-colors">{contract.title}</h3>
-                      <p className="text-sm text-teal-600 capitalize">{contract.type}</p>
-                    </div>
-                  </div>
-                  <button className="p-1 text-teal-400 hover:text-teal-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <MoreVertical className="h-4 w-4" />
-                  </button>
-                </div>
-
-                <div className="mb-4 flex items-center space-x-2">
-                  <Badge variant={statusConfig[contract.status].color}>
-                    <div className="flex items-center space-x-1">
-                      {getStatusIcon(contract.status)}
-                      <span className="capitalize">{contract.status}</span>
-                    </div>
-                  </Badge>
-                  <Badge variant={priorityConfig[contract.priority].color}>
-                    {contract.priority.charAt(0).toUpperCase() + contract.priority.slice(1)}
-                  </Badge>
-                </div>
-
-                <p className="text-sm text-teal-700 mb-4 line-clamp-2">{contract.description}</p>
-
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center justify-between">
-                    <span className="text-teal-600">Client:</span>
-                    <span className="font-medium text-teal-900">{contract.client}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-teal-600">Value:</span>
-                    <span className="font-medium text-teal-900">{formatCurrency(contract.value)}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-teal-600">Duration:</span>
-                    <span className="font-medium text-teal-900">{formatDate(contract.startDate)} - {formatDate(contract.endDate)}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-teal-600">Assigned:</span>
-                    <span className="font-medium text-teal-900">{contract.assignedTo}</span>
-                  </div>
-                </div>
-
-                <div className="mt-4 flex items-center justify-between">
-                  <Badge variant={riskConfig[contract.riskLevel].color}>
-                    Risk: {contract.riskLevel.charAt(0).toUpperCase() + contract.riskLevel.slice(1)}
-                  </Badge>
-                  <div className="flex items-center space-x-2">
-                    <Button variant="secondary" size="sm" className="p-2 bg-white/50 border-teal-200 hover:bg-teal-50">
-                      <Eye className="h-4 w-4 text-teal-600" />
-                    </Button>
-                    <Button variant="secondary" size="sm" className="p-2 bg-white/50 border-teal-200 hover:bg-teal-50">
-                      <Edit className="h-4 w-4 text-teal-600" />
-                    </Button>
-                    <Button variant="secondary" size="sm" className="p-2 bg-white/50 border-teal-200 hover:bg-teal-50">
-                      <Download className="h-4 w-4 text-teal-600" />
-                    </Button>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+          <Tabs
+            tabs={tabs}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            variant="default"
+            size="md"
+            className="mb-6"
+          />
         </motion.div>
 
-        {filteredContracts.length === 0 && (
-          <motion.div 
-            className="text-center py-12"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.6 }}
-          >
-            <div className="p-4 bg-gradient-to-br from-teal-100 to-cyan-100 rounded-2xl w-fit mx-auto mb-6">
-              <FileText className="h-12 w-12 text-teal-600 mx-auto" />
-            </div>
-            <h3 className="text-lg font-medium text-teal-900 mb-2">No contracts found</h3>
-            <p className="text-teal-600 mb-6">
-              {searchTerm || statusFilter !== 'all' || typeFilter !== 'all'
-                ? 'Try adjusting your search or filters'
-                : 'Get started by creating your first contract'
-              }
-            </p>
-            <Button 
-              className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 flex items-center space-x-2 mx-auto"
-              onClick={() => setShowCreateModal(true)}
+        {/* Search and Filters */}
+        <motion.div 
+          className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 mb-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.6 }}
+        >
+          <div className="flex-1 max-w-md">
+            <SearchInput
+              placeholder="Search contracts, clients, terms..."
+              value={searchTerm}
+              onChange={setSearchTerm}
+              onSubmit={handleSearch}
+              showFilters={true}
+              onFiltersClick={() => setShowFilters(!showFilters)}
+              suggestions={['Software License', 'Service Agreement', 'NDA', 'MSA', 'Partnership']}
+              size="md"
+            />
+          </div>
+          
+          <div className="flex items-center space-x-3">
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="border-2 border-counsel-200 rounded-xl px-4 py-3 focus:border-counsel-500 focus:ring-0 outline-none bg-white/70 backdrop-blur-sm text-counsel-700 font-medium"
             >
-              <Plus className="h-4 w-4" />
-              <span>New Contract</span>
-            </Button>
-          </motion.div>
-        )}
+              <option value="all">All Status</option>
+              <option value="draft">Draft</option>
+              <option value="review">Under Review</option>
+              <option value="pending">Pending</option>
+              <option value="executed">Executed</option>
+              <option value="expired">Expired</option>
+            </select>
+            
+            <motion.button 
+              className="p-3 bg-counsel-600 text-white rounded-xl hover:bg-counsel-700 transition-colors duration-200"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Brain className="h-5 w-5" />
+            </motion.button>
+          </div>
+        </motion.div>
       </div>
 
-      {/* Contract Detail Modal */}
-      {selectedContract && (
-        <Modal
-          isOpen={!!selectedContract}
-          onClose={() => setSelectedContract(null)}
-          title={selectedContract.title}
-          size="lg"
+      {/* Contract Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {filteredContracts.map((contract, index) => (
+          <motion.div
+            key={contract.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 + index * 0.1 }}
+            className="group bg-white/90 backdrop-blur-sm rounded-2xl border border-counsel-200/50 shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden"
+            whileHover={{ y: -5 }}
+          >
+            {/* Contract Header */}
+            <div className="p-6 pb-4">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-start space-x-3">
+                  <div className={`p-3 rounded-xl bg-gradient-to-br ${
+                    contract.type === 'License' ? 'from-blue-500 to-blue-600' :
+                    contract.type === 'Service' ? 'from-green-500 to-green-600' :
+                    contract.type === 'NDA' ? 'from-purple-500 to-purple-600' :
+                    contract.type === 'MSA' ? 'from-red-500 to-red-600' :
+                    contract.type === 'Partnership' ? 'from-orange-500 to-orange-600' :
+                    'from-counsel-500 to-counsel-600'
+                  }`}>
+                    <FileText className="h-5 w-5 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-counsel-800 text-lg leading-tight group-hover:text-counsel-700 transition-colors">
+                      {contract.title}
+                    </h3>
+                    <p className="text-sm text-counsel-600 font-medium">{contract.type}</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  {/* Risk Level Indicator */}
+                  <div className={`w-3 h-3 rounded-full ${
+                    contract.riskLevel === 'high' ? 'bg-red-500' :
+                    contract.riskLevel === 'medium' ? 'bg-orange-500' :
+                    'bg-green-500'
+                  }`} />
+                  
+                  <motion.button 
+                    className="p-2 text-counsel-400 hover:text-counsel-600 hover:bg-counsel-50 rounded-lg transition-colors"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    <MoreVertical className="h-4 w-4" />
+                  </motion.button>
+                </div>
+              </div>
+
+              {/* Status and Priority */}
+              <div className="flex items-center justify-between mb-4">
+                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${
+                  contract.status === 'executed' ? 'bg-green-100 text-green-700 border border-green-200' :
+                  contract.status === 'review' ? 'bg-orange-100 text-orange-700 border border-orange-200' :
+                  contract.status === 'pending' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
+                  contract.status === 'draft' ? 'bg-gray-100 text-gray-700 border border-gray-200' :
+                  'bg-red-100 text-red-700 border border-red-200'
+                }`}>
+                  {contract.status.toUpperCase()}
+                </span>
+                
+                <span className={`inline-flex items-center px-2 py-1 rounded-lg text-xs font-semibold ${
+                  contract.priority === 'high' ? 'bg-red-50 text-red-600' :
+                  contract.priority === 'medium' ? 'bg-orange-50 text-orange-600' :
+                  'bg-green-50 text-green-600'
+                }`}>
+                  {contract.priority.toUpperCase()}
+                </span>
+              </div>
+
+              {/* Progress Bar */}
+              {contract.status !== 'executed' && contract.status !== 'expired' && (
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-semibold text-counsel-600">Progress</span>
+                    <span className="text-xs font-bold text-counsel-800">{contract.progress}%</span>
+                  </div>
+                  <div className="w-full bg-counsel-100 rounded-full h-2">
+                    <motion.div 
+                      className="bg-gradient-to-r from-counsel-500 to-legal-500 h-2 rounded-full"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${contract.progress}%` }}
+                      transition={{ delay: 0.8 + index * 0.1, duration: 0.8 }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <p className="text-sm text-counsel-600 mb-4 line-clamp-2 leading-relaxed">
+                {contract.description}
+              </p>
+            </div>
+
+            {/* Contract Details */}
+            <div className="px-6 py-4 bg-gradient-to-br from-legal-50/50 to-counsel-50/30 border-t border-counsel-100">
+              <div className="space-y-3 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-counsel-600 font-medium flex items-center">
+                    <User className="h-3 w-3 mr-1" />
+                    Client:
+                  </span>
+                  <span className="font-bold text-counsel-800">{contract.client}</span>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-counsel-600 font-medium flex items-center">
+                    <DollarSign className="h-3 w-3 mr-1" />
+                    Value:
+                  </span>
+                  <span className="font-bold text-green-600">
+                    {contract.value > 0 ? `$${contract.value.toLocaleString()}` : 'N/A'}
+                  </span>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-counsel-600 font-medium flex items-center">
+                    <Calendar className="h-3 w-3 mr-1" />
+                    Duration:
+                  </span>
+                  <span className="font-medium text-counsel-800 text-xs">
+                    {new Date(contract.startDate).toLocaleDateString()} - {new Date(contract.endDate).toLocaleDateString()}
+                  </span>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-counsel-600 font-medium">Assigned:</span>
+                  <span className="font-medium text-counsel-800">{contract.assignedTo}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* AI Insights */}
+            {contract.aiInsights && contract.aiInsights.length > 0 && (
+              <div className="px-6 py-4 bg-gradient-to-r from-counsel-50 to-legal-50 border-t border-counsel-100">
+                <div className="flex items-center mb-2">
+                  <Brain className="h-4 w-4 text-counsel-600 mr-2" />
+                  <span className="text-sm font-bold text-counsel-700">AI Insights</span>
+                </div>
+                <div className="space-y-1">
+                  {contract.aiInsights.slice(0, 2).map((insight, idx) => (
+                    <p key={idx} className="text-xs text-counsel-600 leading-relaxed">
+                      • {insight}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="px-6 py-4 border-t border-counsel-100 bg-white/50">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <motion.button 
+                    className="p-2 text-counsel-600 hover:bg-counsel-100 rounded-lg transition-colors"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </motion.button>
+                  <motion.button 
+                    className="p-2 text-counsel-600 hover:bg-counsel-100 rounded-lg transition-colors"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </motion.button>
+                  <motion.button 
+                    className="p-2 text-counsel-600 hover:bg-counsel-100 rounded-lg transition-colors"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    <Download className="h-4 w-4" />
+                  </motion.button>
+                </div>
+                
+                <motion.button 
+                  className="flex items-center space-x-2 px-3 py-2 bg-gradient-to-r from-counsel-600 to-legal-600 text-white text-xs font-semibold rounded-lg hover:from-counsel-700 hover:to-legal-700 transition-all duration-200"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Zap className="h-3 w-3" />
+                  <span>AI Analyze</span>
+                </motion.button>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      {filteredContracts.length === 0 && (
+        <motion.div 
+          className="text-center py-16"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
         >
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-12 border border-counsel-200/50 shadow-lg max-w-md mx-auto">
+            <div className="p-4 bg-gradient-to-br from-counsel-100 to-legal-100 rounded-2xl w-fit mx-auto mb-6">
+              <FileText className="h-12 w-12 text-counsel-600" />
+            </div>
+            <h3 className="text-xl font-bold text-counsel-800 mb-3">No contracts found</h3>
+            <p className="text-counsel-600 mb-6 leading-relaxed">
+              {searchTerm || filterStatus !== 'all' 
+                ? 'Try adjusting your search criteria or filters to find what you\'re looking for.'
+                : 'Start building your contract portfolio with AI-powered contract creation and analysis.'
+              }
+            </p>
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={() => setShowNewContractModal(true)}
+              icon={Plus}
+            >
+              Create New Contract
+            </Button>
+          </div>
+        </motion.div>
+      )}
+
+      {/* New Contract Modal */}
+      <Modal
+        isOpen={showNewContractModal}
+        onClose={() => setShowNewContractModal(false)}
+        title="Create New Contract"
+        size="lg"
+      >
+        <ModalBody>
           <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-teal-600 mb-1">Client</label>
-                <p className="text-teal-900 font-semibold">{selectedContract.client}</p>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Contract Title</label>
+                <input
+                  type="text"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                  placeholder="Enter contract title"
+                />
               </div>
               <div>
-                <label className="block text-sm font-medium text-teal-600 mb-1">Type</label>
-                <p className="text-teal-900 capitalize">{selectedContract.type}</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-teal-600 mb-1">Status</label>
-                <Badge variant={statusConfig[selectedContract.status].color}>
-                  {selectedContract.status.charAt(0).toUpperCase() + selectedContract.status.slice(1)}
-                </Badge>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-teal-600 mb-1">Priority</label>
-                <Badge variant={priorityConfig[selectedContract.priority].color}>
-                  {selectedContract.priority.charAt(0).toUpperCase() + selectedContract.priority.slice(1)}
-                </Badge>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-teal-600 mb-1">Contract Value</label>
-                <p className="text-teal-900 font-semibold">{formatCurrency(selectedContract.value)}</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-teal-600 mb-1">Risk Level</label>
-                <Badge variant={riskConfig[selectedContract.riskLevel].color}>
-                  {selectedContract.riskLevel.charAt(0).toUpperCase() + selectedContract.riskLevel.slice(1)}
-                </Badge>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Client</label>
+                <input
+                  type="text"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                  placeholder="Enter client name"
+                />
               </div>
             </div>
             
-            <div>
-              <label className="block text-sm font-medium text-teal-600 mb-2">Description</label>
-              <p className="text-teal-800">{selectedContract.description}</p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-teal-600 mb-1">Start Date</label>
-                <p className="text-teal-900">{formatDate(selectedContract.startDate)}</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-teal-600 mb-1">End Date</label>
-                <p className="text-teal-900">{formatDate(selectedContract.endDate)}</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-teal-600 mb-1">Assigned To</label>
-                <p className="text-teal-900">{selectedContract.assignedTo}</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-teal-600 mb-1">Last Modified</label>
-                <p className="text-teal-900">{formatDate(selectedContract.lastModified)}</p>
-              </div>
-            </div>
-
-            <div className="flex space-x-3 pt-4">
-              <Button className="flex-1 bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700">Edit Contract</Button>
-              <Button variant="secondary" className="border-teal-200 text-teal-700 hover:bg-teal-50">Download PDF</Button>
-              <Button variant="secondary" className="border-teal-200 text-teal-700 hover:bg-teal-50">Add Note</Button>
-            </div>
-          </div>
-        </Modal>
-      )}
-
-      {/* Create Contract Modal */}
-      {showCreateModal && (
-        <Modal
-          isOpen={showCreateModal}
-          onClose={() => setShowCreateModal(false)}
-          title="Create New Contract"
-          size="lg"
-        >
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-teal-600 mb-1">Title</label>
-                <Input placeholder="Enter contract title" className="border-teal-200 focus:border-teal-500 focus:ring-teal-500/20" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-teal-600 mb-1">Type</label>
-                <select className="w-full px-3 py-2 border border-teal-200 rounded-xl focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500">
-                  <option value="license">License</option>
-                  <option value="service">Service</option>
-                  <option value="nda">NDA</option>
-                  <option value="employment">Employment</option>
-                  <option value="vendor">Vendor</option>
-                  <option value="partnership">Partnership</option>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Contract Type</label>
+                <select className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-cyan-500 focus:border-transparent">
+                  <option value="License">License Agreement</option>
+                  <option value="Service">Service Agreement</option>
+                  <option value="NDA">Non-Disclosure Agreement</option>
+                  <option value="MSA">Master Service Agreement</option>
+                  <option value="Partnership">Partnership Agreement</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-teal-600 mb-1">Client</label>
-                <Input placeholder="Select or enter client" className="border-teal-200 focus:border-teal-500 focus:ring-teal-500/20" />
+                <label className="block text-sm font-medium text-gray-700 mb-2">Contract Value</label>
+                <input
+                  type="number"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                  placeholder="Enter contract value"
+                />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                <input
+                  type="date"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                />
               </div>
               <div>
-                <label className="block text-sm font-medium text-teal-600 mb-1">Contract Value</label>
-                <Input type="number" placeholder="0" className="border-teal-200 focus:border-teal-500 focus:ring-teal-500/20" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-teal-600 mb-1">Start Date</label>
-                <Input type="date" className="border-teal-200 focus:border-teal-500 focus:ring-teal-500/20" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-teal-600 mb-1">End Date</label>
-                <Input type="date" className="border-teal-200 focus:border-teal-500 focus:ring-teal-500/20" />
+                <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                <input
+                  type="date"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                />
               </div>
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-teal-600 mb-1">Description</label>
-              <textarea 
-                className="w-full px-3 py-2 border border-teal-200 rounded-xl h-24 resize-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
-                placeholder="Enter contract description..."
+              <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+              <textarea
+                rows={4}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                placeholder="Enter contract description"
               />
             </div>
-
-            <div className="flex space-x-3 pt-4">
-              <Button className="flex-1 bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700">Create Contract</Button>
-              <Button variant="secondary" onClick={() => setShowCreateModal(false)} className="border-teal-200 text-teal-700 hover:bg-teal-50">Cancel</Button>
-            </div>
           </div>
-        </Modal>
-      )}
+        </ModalBody>
+        <ModalFooter>
+          <Button
+            variant="ghost"
+            onClick={() => setShowNewContractModal(false)}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            onClick={() => {
+              logger.info('Creating new contract from modal')
+              // TODO: Implement actual contract creation API call
+              setShowNewContractModal(false)
+            }}
+          >
+            Create Contract
+          </Button>
+        </ModalFooter>
+      </Modal>
     </div>
   )
 }

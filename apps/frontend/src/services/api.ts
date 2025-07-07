@@ -1,6 +1,9 @@
 import axios from 'axios'
+import { logger } from './logger'
+import { errorHandler } from './errorHandler'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1'
+const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true'
 
 // Create axios instance
 const api = axios.create({
@@ -16,17 +19,48 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
+  
+  // Log API requests in development
+  if (import.meta.env.DEV) {
+    logger.debug('API Request', { 
+      method: config.method?.toUpperCase(), 
+      url: config.url, 
+      baseURL: config.baseURL 
+    })
+  }
+  
   return config
 })
 
-// Handle auth errors
+// Handle auth errors and logging
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Log successful responses in development
+    if (import.meta.env.DEV) {
+      logger.debug('API Response', { 
+        status: response.status, 
+        url: response.config.url,
+        method: response.config.method?.toUpperCase()
+      })
+    }
+    return response
+  },
   (error) => {
+    // Log API errors
+    logger.error('API Error', {
+      status: error.response?.status,
+      url: error.config?.url,
+      method: error.config?.method?.toUpperCase(),
+      message: error.message,
+      response: error.response?.data
+    })
+    
     if (error.response?.status === 401) {
       localStorage.removeItem('auth_token')
+      localStorage.removeItem('auth')
       window.location.href = '/login'
     }
+    
     return Promise.reject(error)
   }
 )

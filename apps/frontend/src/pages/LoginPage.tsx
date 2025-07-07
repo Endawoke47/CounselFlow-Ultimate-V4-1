@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Eye, EyeOff, Shield, Zap, BarChart3, FileText, Gavel, Brain } from 'lucide-react'
+import { Scale, Eye, EyeOff, Loader2, Shield, Brain, BarChart3, FileText, Users, Clock } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
-import { Button, Input } from '@/components/ui/UIComponents'
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { motion } from 'framer-motion'
 
 interface LoginFormData {
@@ -14,107 +14,122 @@ interface LoginFormData {
 export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const { login } = useAuth()
   
   const { register, handleSubmit, formState: { errors }, setValue } = useForm<LoginFormData>({
-    mode: 'onChange',
     defaultValues: {
       email: 'demo@counselflow.com',
-      password: 'password123',
+      password: 'demo123',
       rememberMe: false
     }
   })
 
-  // Ensure default values are set on component mount
-  React.useEffect(() => {
-    setValue('email', 'demo@counselflow.com')
-    setValue('password', 'password123')
-  }, [setValue])
-
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true)
+    setError(null)
     try {
-      console.log('Login form submitted with:', { email: data.email, password: data.password })
       await login(data.email, data.password)
-      console.log('Login successful')
-    } catch (error) {
-      console.error('Login failed:', error)
-      // Don't show error toast here since AuthContext handles it
+    } catch (error: any) {
+      setError(error.message || 'Login failed. Please try again.')
     } finally {
       setIsLoading(false)
     }
   }
 
-  const features = [
-    { icon: Brain, text: "AI-Powered Legal Intelligence", color: "text-accent-purple" },
-    { icon: Gavel, text: "Complete Matter Management", color: "text-primary" },
-    { icon: FileText, text: "Contract Lifecycle Management", color: "text-success" },
-    { icon: BarChart3, text: "Advanced Analytics & Reporting", color: "text-warning" },
-    { icon: Shield, text: "Enterprise-Grade Security", color: "text-danger" },
-    { icon: Zap, text: "Lightning-Fast Performance", color: "text-info" }
-  ]
+  const quickLogin = async (email: string, password: string) => {
+    setValue('email', email)
+    setValue('password', password)
+    setError(null)
+    setIsLoading(true)
+    try {
+      await login(email, password)
+    } catch (error: any) {
+      setError(error.message || 'Login failed. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
-    <div className="min-h-screen flex bg-gradient-to-br from-neutral-50 via-white to-light-gray">
+    <div className="min-h-screen flex bg-legal-50">
       {/* Left side - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary via-primary-600 to-primary-700 relative overflow-hidden">
-        {/* Animated background elements */}
-        <div className="absolute inset-0">
-          <div className="absolute top-20 left-20 w-64 h-64 bg-white/5 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-32 right-16 w-48 h-48 bg-accent-purple/10 rounded-full blur-2xl animate-pulse delay-1000"></div>
-          <div className="absolute top-1/2 left-1/4 w-32 h-32 bg-white/10 rounded-full blur-xl animate-bounce"></div>
-        </div>
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-professional relative overflow-hidden">
+        {/* Animated background pattern */}
+        <div className="absolute inset-0 bg-mesh-gradient opacity-30" />
+        <div className="absolute inset-0 bg-gradient-to-br from-counsel-500/20 to-counsel-700/40" />
         
-        <div className="relative z-10 flex flex-col justify-center items-center text-white p-12 w-full">
+        {/* Floating elements */}
+        <div className="absolute top-20 left-20 w-32 h-32 bg-counsel-300/20 rounded-full blur-xl animate-pulse-legal" />
+        <div className="absolute bottom-20 right-20 w-24 h-24 bg-legal-400/20 rounded-full blur-xl animate-pulse-legal" style={{ animationDelay: '1s' }} />
+        
+        <div className="relative z-10 flex flex-col justify-center items-center text-white p-12">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-center w-full max-w-lg"
+            className="text-center max-w-lg"
           >
-            {/* Modern CF Logo - matching sidebar */}
-            <div className="flex justify-center mb-8">
-              <div className="relative w-20 h-20 bg-gradient-to-br from-white via-blue-50 to-indigo-100 rounded-3xl flex items-center justify-center shadow-2xl border-2 border-white/30 backdrop-blur-sm">
-                <div className="relative flex items-center justify-center w-full h-full">
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary-400/20 to-primary-600/30 rounded-3xl animate-pulse"></div>
-                  <div className="relative z-20 flex items-center">
-                    <span className="font-extrabold text-3xl bg-gradient-to-r from-primary-700 via-primary-600 to-primary-800 bg-clip-text text-transparent tracking-tight">
-                      C
-                    </span>
-                    <span className="font-extrabold text-3xl bg-gradient-to-r from-accent-purple via-primary-600 to-primary-700 bg-clip-text text-transparent -ml-1">
-                      F
-                    </span>
-                  </div>
-                  <div className="absolute top-2 left-2 w-1.5 h-1.5 bg-primary-400 rounded-full opacity-60"></div>
-                  <div className="absolute bottom-2 right-2 w-1 h-1 bg-accent-purple rounded-full opacity-40"></div>
-                </div>
-              </div>
-            </div>
+            {/* Logo with glow effect */}
+            <motion.div 
+              className="relative mb-8"
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <div className="absolute inset-0 bg-white/20 rounded-full blur-2xl scale-150" />
+              <Scale className="h-24 w-24 mx-auto relative z-10 drop-shadow-lg" />
+            </motion.div>
             
-            <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
+            <motion.h1 
+              className="text-5xl font-bold mb-4 bg-gradient-to-r from-white to-counsel-100 bg-clip-text text-transparent"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3, duration: 0.8 }}
+            >
               CounselFlow Ultimate
-            </h1>
-            <p className="text-xl text-blue-100 mb-12 font-medium">
-              The Complete Legal Management System
-            </p>
+            </motion.h1>
+            
+            <motion.p 
+              className="text-xl text-counsel-100 mb-12 font-light"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.8 }}
+            >
+              Enterprise Legal Technology Platform
+            </motion.p>
             
             {/* Feature grid */}
-            <div className="grid grid-cols-1 gap-4 text-left">
-              {features.map((feature, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6, delay: 0.2 + index * 0.1 }}
-                  className="flex items-center bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 hover:bg-white/15 transition-all duration-300"
-                >
-                  <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center mr-4 backdrop-blur-sm">
-                    <feature.icon className="h-5 w-5 text-white" />
-                  </div>
-                  <span className="text-white font-medium">{feature.text}</span>
-                </motion.div>
-              ))}
-            </div>
+            <motion.div 
+              className="grid grid-cols-2 gap-6 text-left"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7, duration: 0.8 }}
+            >
+              <div className="flex items-center space-x-3">
+                <Brain className="h-6 w-6 text-counsel-300" />
+                <span className="text-counsel-100">AI Legal Assistant</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <FileText className="h-6 w-6 text-counsel-300" />
+                <span className="text-counsel-100">Contract Management</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <Users className="h-6 w-6 text-counsel-300" />
+                <span className="text-counsel-100">Matter Tracking</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <BarChart3 className="h-6 w-6 text-counsel-300" />
+                <span className="text-counsel-100">Advanced Analytics</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <Shield className="h-6 w-6 text-counsel-300" />
+                <span className="text-counsel-100">Risk Assessment</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <Clock className="h-6 w-6 text-counsel-300" />
+                <span className="text-counsel-100">Time Tracking</span>
+              </div>
+            </motion.div>
           </motion.div>
         </div>
       </div>
@@ -127,144 +142,249 @@ export function LoginPage() {
           transition={{ duration: 0.8, delay: 0.3 }}
           className="max-w-md w-full"
         >
-          <div className="bg-white rounded-3xl shadow-2xl border border-neutral-200 p-8 backdrop-blur-sm">
-            <div className="text-center mb-8">
-              {/* Mobile logo */}
-              <div className="lg:hidden mb-6 flex justify-center">
-                <div className="relative w-16 h-16 bg-gradient-to-br from-primary via-primary-600 to-primary-700 rounded-2xl flex items-center justify-center shadow-xl">
-                  <div className="relative flex items-center justify-center w-full h-full">
-                    <div className="relative z-20 flex items-center">
-                      <span className="font-extrabold text-2xl text-white tracking-tight">C</span>
-                      <span className="font-extrabold text-2xl text-blue-200 -ml-0.5">F</span>
-                    </div>
-                  </div>
+          <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 p-8 relative overflow-hidden">
+            {/* Subtle gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-counsel-50/50 to-legal-100/30 rounded-3xl" />
+            
+            <div className="relative z-10">
+              <div className="text-center mb-8">
+                <div className="lg:hidden mb-6">
+                  <motion.div
+                    whileHover={{ scale: 1.1 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                  >
+                    <Scale className="h-16 w-16 text-counsel-600 mx-auto mb-4 drop-shadow-lg" />
+                  </motion.div>
                 </div>
+                
+                <motion.h2 
+                  className="text-4xl font-bold bg-gradient-to-r from-counsel-700 to-legal-600 bg-clip-text text-transparent mb-3"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5, duration: 0.6 }}
+                >
+                  Welcome Back
+                </motion.h2>
+                
+                <motion.p 
+                  className="text-counsel-600 font-medium"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.7, duration: 0.6 }}
+                >
+                  Access your legal command center
+                </motion.p>
               </div>
-              <h2 className="text-3xl font-bold text-dark-navy mb-2">Welcome Back</h2>
-              <p className="text-muted-gray">Sign in to your CounselFlow account</p>
-            </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              <div>
-                <label htmlFor="email" className="block text-sm font-semibold text-dark-navy mb-3">
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl"
+              >
+                <p className="text-red-700 text-sm font-medium">{error}</p>
+              </motion.div>
+            )}
+
+            <motion.form 
+              onSubmit={handleSubmit(onSubmit)} 
+              className="space-y-6"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.9, duration: 0.6 }}
+            >
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 1.0, duration: 0.5 }}
+              >
+                <label htmlFor="email" className="block text-sm font-semibold text-counsel-700 mb-2">
                   Email Address
                 </label>
-                <Input
+                <input
                   {...register('email', {
-                    required: 'Email is required'
+                    required: 'Email is required',
+                    pattern: {
+                      value: /^\S+@\S+$/i,
+                      message: 'Invalid email address'
+                    }
                   })}
                   type="email"
-                  placeholder="Enter your email"
-                  className="w-full"
-                  defaultValue="demo@counselflow.com"
-                  error={errors.email?.message}
+                  className="w-full px-4 py-3 border-2 border-counsel-200 rounded-xl focus:border-counsel-500 focus:ring-0 outline-none transition-colors duration-200 bg-white/70 backdrop-blur-sm text-counsel-800 placeholder-counsel-400"
+                  placeholder="Enter your email address"
                 />
-              </div>
+                {errors.email && (
+                  <motion.p 
+                    className="text-red-500 text-sm mt-1"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                  >
+                    {errors.email.message}
+                  </motion.p>
+                )}
+              </motion.div>
 
-              <div>
-                <label htmlFor="password" className="block text-sm font-semibold text-dark-navy mb-3">
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 1.1, duration: 0.5 }}
+              >
+                <label htmlFor="password" className="block text-sm font-semibold text-counsel-700 mb-2">
                   Password
                 </label>
                 <div className="relative">
-                  <Input
+                  <input
                     {...register('password', {
-                      required: 'Password is required'
+                      required: 'Password is required',
+                      minLength: {
+                        value: 6,
+                        message: 'Password must be at least 6 characters'
+                      }
                     })}
                     type={showPassword ? 'text' : 'password'}
+                    className="w-full px-4 py-3 pr-12 border-2 border-counsel-200 rounded-xl focus:border-counsel-500 focus:ring-0 outline-none transition-colors duration-200 bg-white/70 backdrop-blur-sm text-counsel-800 placeholder-counsel-400"
                     placeholder="Enter your password"
-                    className="w-full pr-12"
-                    defaultValue="password123"
-                    error={errors.password?.message}
                   />
-                  <button
+                  <motion.button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-gray hover:text-dark-navy transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg p-1"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-counsel-400 hover:text-counsel-600 transition-colors duration-200"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
                   >
                     {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                  </button>
+                  </motion.button>
                 </div>
-              </div>
+                {errors.password && (
+                  <motion.p 
+                    className="text-red-500 text-sm mt-1"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                  >
+                    {errors.password.message}
+                  </motion.p>
+                )}
+              </motion.div>
 
-              <div className="flex items-center justify-between">
-                <label className="flex items-center cursor-pointer group">
+              <motion.div 
+                className="flex items-center justify-between"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.2, duration: 0.5 }}
+              >
+                <label className="flex items-center cursor-pointer">
                   <input
                     {...register('rememberMe')}
                     type="checkbox"
-                    className="h-4 w-4 text-primary focus:ring-primary border-muted-gray rounded transition-colors duration-200"
+                    className="h-4 w-4 text-counsel-600 focus:ring-counsel-500 border-counsel-300 rounded"
                   />
-                  <span className="ml-3 text-sm text-muted-gray group-hover:text-dark-navy transition-colors duration-200">
-                    Remember me
-                  </span>
+                  <span className="ml-2 text-sm text-counsel-600 font-medium">Remember me</span>
                 </label>
-                <a 
-                  href="#" 
-                  className="text-sm text-primary hover:text-primary-600 font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg px-1 py-1"
-                >
+                <a href="#" className="text-sm text-counsel-600 hover:text-counsel-500 font-medium transition-colors duration-200">
                   Forgot password?
                 </a>
-              </div>
+              </motion.div>
 
-              <Button
+              <motion.button
                 type="submit"
-                variant="primary"
-                size="lg"
-                className="w-full h-12"
-                loading={isLoading}
                 disabled={isLoading}
+                className="w-full h-12 bg-gradient-to-r from-counsel-600 to-legal-600 hover:from-counsel-700 hover:to-legal-700 text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-counsel-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.3, duration: 0.5 }}
               >
-                {isLoading ? 'Signing in...' : 'Sign In'}
-              </Button>
-
-              {/* Backup login button if form validation fails */}
-              <button
-                type="button"
-                onClick={async () => {
-                  setIsLoading(true)
-                  try {
-                    await login('demo@counselflow.com', 'password123')
-                  } catch (error) {
-                    console.error('Backup login failed:', error)
-                  } finally {
-                    setIsLoading(false)
-                  }
-                }}
-                className="w-full mt-2 h-12 bg-secondary hover:bg-secondary-600 text-white font-medium rounded-lg transition-colors duration-200"
-                disabled={isLoading}
-              >
-                🚀 Quick Demo Login
-              </button>
-            </form>
+                {isLoading ? (
+                  <div className="flex items-center justify-center">
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                    Signing in...
+                  </div>
+                ) : (
+                  'Sign In to CounselFlow'
+                )}
+              </motion.button>
+            </motion.form>
 
             {/* Demo Credentials */}
-            <div className="mt-8 p-6 bg-gradient-to-r from-light-gray to-neutral-100 rounded-2xl border border-neutral-200">
-              <div className="flex items-center justify-center mb-3">
-                <Shield className="h-5 w-5 text-primary mr-2" />
-                <h4 className="text-sm font-semibold text-dark-navy">
-                  Demo Credentials
-                </h4>
-              </div>
-              <div className="text-sm text-muted-gray space-y-2 text-center">
-                <div className="bg-white rounded-lg p-3 border border-neutral-200">
-                  <div className="font-medium text-dark-navy">demo@counselflow.com</div>
-                  <div className="font-medium text-dark-navy">password123</div>
+            <motion.div 
+              className="mt-8 p-6 bg-gradient-to-br from-counsel-50 to-legal-100 rounded-2xl border border-counsel-200"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.4, duration: 0.5 }}
+            >
+              <h4 className="text-sm font-bold text-counsel-700 mb-3 text-center flex items-center justify-center">
+                <Shield className="h-4 w-4 mr-2" />
+                Demo Access Credentials
+              </h4>
+              <div className="text-sm text-counsel-600 space-y-2 bg-white/60 p-3 rounded-lg">
+                <div className="flex justify-between">
+                  <span className="font-medium">Email:</span>
+                  <span className="font-mono bg-counsel-100 px-2 py-1 rounded text-xs">demo@counselflow.com</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">Password:</span>
+                  <span className="font-mono bg-counsel-100 px-2 py-1 rounded text-xs">demo123</span>
                 </div>
               </div>
-              <p className="text-xs text-muted-gray mt-3 text-center">
-                Use these credentials to explore the system
-              </p>
-            </div>
+              <div className="mt-3 space-y-2">
+                <p className="text-xs text-counsel-500 text-center font-medium mb-3">
+                  🚀 Quick Login Options
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => quickLogin('admin@counselflow.com', 'admin123')}
+                    disabled={isLoading}
+                    className="px-3 py-2 bg-counsel-100 hover:bg-counsel-200 text-counsel-700 text-xs font-medium rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    Admin
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => quickLogin('lawyer@counselflow.com', 'lawyer123')}
+                    disabled={isLoading}
+                    className="px-3 py-2 bg-counsel-100 hover:bg-counsel-200 text-counsel-700 text-xs font-medium rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    Lawyer
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => quickLogin('paralegal@counselflow.com', 'paralegal123')}
+                    disabled={isLoading}
+                    className="px-3 py-2 bg-counsel-100 hover:bg-counsel-200 text-counsel-700 text-xs font-medium rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    Paralegal
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => quickLogin('demo@counselflow.com', 'demo123')}
+                    disabled={isLoading}
+                    className="px-3 py-2 bg-legal-100 hover:bg-legal-200 text-legal-700 text-xs font-medium rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    Demo
+                  </button>
+                </div>
+              </div>
+            </motion.div>
 
-            <div className="mt-6 text-center">
-              <p className="text-sm text-muted-gray">
-                Don't have an account?{' '}
-                <a 
+            <motion.div 
+              className="mt-6 text-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.5, duration: 0.5 }}
+            >
+              <p className="text-sm text-counsel-600">
+                Need enterprise access?{' '}
+                <motion.a 
                   href="#" 
-                  className="text-primary hover:text-primary-600 font-semibold transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg px-1 py-1"
+                  className="text-counsel-700 hover:text-counsel-800 font-semibold transition-colors duration-200"
+                  whileHover={{ scale: 1.05 }}
                 >
-                  Contact your administrator
-                </a>
+                  Contact Sales
+                </motion.a>
               </p>
+            </motion.div>
             </div>
           </div>
         </motion.div>
