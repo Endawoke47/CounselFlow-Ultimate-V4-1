@@ -1,31 +1,25 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { 
-  Scale, 
   Menu, 
   X, 
   Home, 
-  Briefcase, 
-  FileText, 
-  Users, 
-  MessageSquare,
+  Cases, 
+  Contracts, 
+  Clients, 
+  Documents,
+  AI,
   Settings,
-  LogOut,
   Bell,
   Search,
   User,
-  Shield,
-  Building,
-  Archive,
-  Brain,
-  TrendingUp,
-  Gavel,
-  Inbox,
+  Analytics,
   Database,
   Plus,
-  Grid3X3,
-  ChevronDown
-} from 'lucide-react'
+  ChevronDown,
+  Scale,
+  LogOut
+} from '../icons'
 import { useAuth } from '../../contexts/AuthContext'
 import { motion, AnimatePresence } from 'framer-motion'
 import { SimpleSignOut } from '../SimpleSignOut'
@@ -75,27 +69,28 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
-    { name: 'Matters', href: '/matters', icon: Briefcase },
-    { name: 'Contracts', href: '/contracts', icon: FileText },
-    { name: 'Clients', href: '/clients', icon: Users },
-    { name: 'Documents', href: '/documents', icon: Archive },
-    { name: 'AI Assistant', href: '/ai', icon: MessageSquare },
-    { name: 'Legal Intake', href: '/intake', icon: Inbox },
-    { name: 'IP Management', href: '/ip-management', icon: Shield },
-    { name: 'Entity Management', href: '/entity-management', icon: Building },
-    { name: 'Compliance', href: '/compliance', icon: Scale },
-    { name: 'Privacy & Data', href: '/privacy', icon: Shield },
-    { name: 'Disputes', href: '/disputes', icon: Gavel },
-    { name: 'Spend Analytics', href: '/spend-analytics', icon: TrendingUp },
+    { name: 'Matters', href: '/matters', icon: Cases },
+    { name: 'Contracts', href: '/contracts', icon: Contracts },
+    { name: 'Clients', href: '/clients', icon: Clients },
+    { name: 'Documents', href: '/documents', icon: Documents },
+    { name: 'AI Document Analysis', href: '/document-analysis', icon: AI },
+    { name: 'AI Assistant', href: '/ai', icon: AI },
+    { name: 'Legal Intake', href: '/intake', icon: Plus },
+    { name: 'IP Management', href: '/ip-management', icon: Documents },
+    { name: 'Entity Management', href: '/entity-management', icon: Cases },
+    { name: 'Compliance', href: '/compliance', icon: Documents },
+    { name: 'Privacy & Data', href: '/privacy', icon: Documents },
+    { name: 'Disputes', href: '/disputes', icon: Cases },
+    { name: 'Spend Analytics', href: '/spend-analytics', icon: Analytics },
     { name: 'Knowledge Base', href: '/knowledge', icon: Database },
     { name: 'Settings', href: '/settings', icon: Settings },
   ]
 
   const quickActions = [
-    { name: 'New Client', action: () => navigate('/clients'), icon: Users },
-    { name: 'New Matter', action: () => navigate('/matters'), icon: Briefcase },
-    { name: 'New Contract', action: () => navigate('/contracts'), icon: FileText },
-    { name: 'AI Assist', action: () => navigate('/ai'), icon: Brain },
+    { name: 'New Client', action: () => navigate('/clients'), icon: Clients },
+    { name: 'New Matter', action: () => navigate('/matters'), icon: Cases },
+    { name: 'New Contract', action: () => navigate('/contracts'), icon: Contracts },
+    { name: 'AI Assist', action: () => navigate('/ai'), icon: AI },
   ]
 
   const notifications = [

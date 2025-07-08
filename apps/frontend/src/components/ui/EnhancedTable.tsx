@@ -3,14 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { 
   ChevronUp, 
   ChevronDown, 
-  MoreHorizontal, 
   Check, 
   Download,
   Filter,
-  Columns,
-  Search,
-  LucideIcon
-} from 'lucide-react'
+  Search
+} from '../icons'
 import { Button } from './Button'
 import { Skeleton, TableSkeleton } from './SkeletonLoader'
 
@@ -30,7 +27,7 @@ interface Column<T> {
 
 interface TableAction<T> {
   label: string
-  icon?: LucideIcon
+  icon?: React.ComponentType<{ size?: number; className?: string }>
   onClick: (item: T) => void
   variant?: 'primary' | 'secondary' | 'outline' | 'danger'
   show?: (item: T) => boolean
@@ -67,7 +64,7 @@ interface EnhancedTableProps<T> {
   actions?: TableAction<T>[]
   bulkActions?: Array<{
     label: string
-    icon?: LucideIcon
+    icon?: React.ComponentType<{ size?: number; className?: string }>
     onClick: (items: T[]) => void
     variant?: 'primary' | 'secondary' | 'outline' | 'danger'
   }>
@@ -309,7 +306,7 @@ export function EnhancedTable<T extends Record<string, any>>({
               <Button
                 variant="outline"
                 size="sm"
-                icon={Columns}
+                icon={Filter}
                 onClick={() => setShowColumnSelector(!showColumnSelector)}
               >
                 Columns

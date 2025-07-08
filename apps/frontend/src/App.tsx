@@ -11,6 +11,7 @@ import { ContractsPage } from './pages/ContractsPage'
 import { ClientsPage } from './pages/ClientsPage'
 import { AIChatPage } from './pages/AIChatPage'
 import { DocumentsPage } from './pages/DocumentsPage'
+import { DocumentAnalysisPage } from './pages/DocumentAnalysisPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { ComponentShowcase } from './pages/ComponentShowcase'
 import { IPManagementPage } from './pages/IPManagementPage'
@@ -147,6 +148,11 @@ export function App() {
               <Route path="/documents" element={
                 <ErrorBoundary onError={handleError}>
                   <DocumentsPage />
+                </ErrorBoundary>
+              } />
+              <Route path="/document-analysis" element={
+                <ErrorBoundary onError={handleError}>
+                  <DocumentAnalysisPage />
                 </ErrorBoundary>
               } />
               <Route path="/settings" element={
