@@ -23,11 +23,17 @@ import { EntityManagementPage } from './pages/EntityManagementPage'
 import { KnowledgeManagementPage } from './pages/KnowledgeManagementPage'
 import { EntitiesPage } from './pages/EntitiesPage'
 import { KnowledgePage } from './pages/KnowledgePage'
-import { LoadingSpinner } from './components/ui/LoadingSpinner'
+import { ImprovementsDemo } from './pages/ImprovementsDemo'
+import { DashboardSkeleton } from './components/ui/SkeletonLoader'
+import { NetworkStatus } from './components/ui/ErrorDisplay'
+import { ShortcutsModal, useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import { logger } from './services/logger'
 
 export function App() {
   const { user, isLoading } = useAuth()
+  
+  // Initialize keyboard shortcuts
+  useKeyboardShortcuts()
 
   // Handle global error logging
   const handleError = (error: Error, errorInfo: React.ErrorInfo) => {
@@ -38,7 +44,7 @@ export function App() {
     return (
       <ErrorBoundary onError={handleError}>
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          <LoadingSpinner size="lg" />
+          <DashboardSkeleton />
         </div>
       </ErrorBoundary>
     )
@@ -57,6 +63,7 @@ export function App() {
 
   return (
     <ErrorBoundary onError={handleError}>
+      <NetworkStatus />
       <AIProvider>
         <DashboardLayout>
           <ErrorBoundary onError={handleError}>
@@ -152,12 +159,18 @@ export function App() {
                   <ComponentShowcase />
                 </ErrorBoundary>
               } />
+              <Route path="/improvements" element={
+                <ErrorBoundary onError={handleError}>
+                  <ImprovementsDemo />
+                </ErrorBoundary>
+              } />
               <Route path="/login" element={<Navigate to="/dashboard" replace />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </ErrorBoundary>
         </DashboardLayout>
       </AIProvider>
+      <ShortcutsModal />
     </ErrorBoundary>
   )
 }

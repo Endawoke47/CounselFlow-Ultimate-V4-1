@@ -4,6 +4,9 @@ import { BrowserRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { App } from './App.tsx'
 import { AuthProvider } from './contexts/AuthContext.tsx'
+import { WebSocketProvider } from './hooks/useWebSocket.tsx'
+import { ThemeProvider } from './contexts/ThemeContext.tsx'
+import { OfflineProvider } from './hooks/useOfflineCapability.tsx'
 import { Toaster } from 'react-hot-toast'
 import './index.css'
 
@@ -18,13 +21,19 @@ const queryClient = new QueryClient({
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AuthProvider>
-          <App />
-          <Toaster position="top-right" />
-        </AuthProvider>
-      </BrowserRouter>
-    </QueryClientProvider>
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <AuthProvider>
+            <OfflineProvider>
+              <WebSocketProvider>
+                <App />
+                <Toaster position="top-right" />
+              </WebSocketProvider>
+            </OfflineProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </QueryClientProvider>
+    </ThemeProvider>
   </React.StrictMode>,
 )

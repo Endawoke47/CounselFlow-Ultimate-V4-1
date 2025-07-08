@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { logger } from './logger'
 import { errorHandler } from './errorHandler'
+import toast from 'react-hot-toast'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1'
 const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true'
@@ -32,7 +33,11 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-// Handle auth errors and logging
+// Retry configuration
+const MAX_RETRIES = 3
+const RETRY_DELAY = 1000
+
+// Handle auth errors, logging, and retries
 api.interceptors.response.use(
   (response) => {
     // Log successful responses in development
@@ -45,7 +50,9 @@ api.interceptors.response.use(
     }
     return response
   },
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config
+    
     // Log API errors
     logger.error('API Error', {
       status: error.response?.status,
@@ -55,10 +62,51 @@ api.interceptors.response.use(
       response: error.response?.data
     })
     
+    // Handle authentication errors
     if (error.response?.status === 401) {
       localStorage.removeItem('auth_token')
       localStorage.removeItem('auth')
       window.location.href = '/login'
+      return Promise.reject(error)
+    }
+    
+    // Retry logic for network errors and 5xx errors
+    if (
+      (!error.response || error.response.status >= 500) &&
+      originalRequest &&
+      !originalRequest._retry &&
+      (originalRequest._retryCount || 0) < MAX_RETRIES
+    ) {
+      originalRequest._retry = true
+      originalRequest._retryCount = (originalRequest._retryCount || 0) + 1
+      
+      const delay = RETRY_DELAY * Math.pow(2, originalRequest._retryCount - 1)
+      
+      logger.info(`Retrying request (attempt ${originalRequest._retryCount}/${MAX_RETRIES})`, {
+        url: originalRequest.url,
+        delay
+      })
+      
+      await new Promise(resolve => setTimeout(resolve, delay))
+      
+      try {
+        const response = await api(originalRequest)
+        toast.success('Connection restored', { duration: 2000 })
+        return response
+      } catch (retryError) {
+        if (originalRequest._retryCount >= MAX_RETRIES) {
+          toast.error('Connection failed after multiple attempts', { duration: 5000 })
+        }
+        return Promise.reject(retryError)
+      }
+    }
+    
+    // Show user-friendly error messages
+    if (error.response?.status >= 400 && error.response?.status < 500) {
+      const message = error.response?.data?.message || 'An error occurred'
+      toast.error(message, { duration: 4000 })
+    } else if (!error.response) {
+      toast.error('Network error - please check your connection', { duration: 5000 })
     }
     
     return Promise.reject(error)
