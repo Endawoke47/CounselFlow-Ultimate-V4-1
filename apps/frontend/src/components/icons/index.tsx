@@ -5,10 +5,11 @@ interface IconProps {
   className?: string
   color?: string
   strokeWidth?: number
+  style?: React.CSSProperties
 }
 
 const createIcon = (path: string | React.ReactNode, viewBox = "0 0 24 24") => {
-  return ({ size = 24, className = "", color = "currentColor", strokeWidth = 1.5 }: IconProps) => (
+  return ({ size = 24, className = "", color = "currentColor", strokeWidth = 1.5, style }: IconProps) => (
     <svg
       width={size}
       height={size}
@@ -19,6 +20,7 @@ const createIcon = (path: string | React.ReactNode, viewBox = "0 0 24 24") => {
       strokeLinecap="round"
       strokeLinejoin="round"
       className={className}
+      style={style}
     >
       {typeof path === 'string' ? <path d={path} /> : path}
     </svg>
@@ -86,6 +88,7 @@ export const Cloud = createIcon("M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z")
 
 // Legal Icons
 export const Scale = createIcon("M12 3l-1.5 6h3L12 3zM8 8l-4 1v5l4-1V8zM16 8v5l4 1V9l-4-1zM5 15l2 6h2l-2-6H5zM15 15l2 6h2l-2-6h-2z")
+export const Shield = createIcon("M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z")
 
 // Communication Icons
 export const Mail = createIcon("M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z")
@@ -137,7 +140,7 @@ const Icons = {
   AI, Robot, Network, Database, Cloud,
   
   // Legal
-  Scale,
+  Scale, Shield,
   
   // Communication
   Mail, Phone, Message, Bell,

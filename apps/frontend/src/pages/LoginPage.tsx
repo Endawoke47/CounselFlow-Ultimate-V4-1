@@ -1,8 +1,7 @@
 import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Scale, Eye, EyeOff, Loader2, Shield, Brain, BarChart3, FileText, Users, Clock } from 'lucide-react'
+import { Scale, Eye, EyeOff, AI, Analytics, Documents, Clients, Clock, Shield } from '../components/icons'
 import { useAuth } from '../contexts/AuthContext'
-import { LoadingSpinner } from '../components/ui/LoadingSpinner'
 import { motion } from 'framer-motion'
 
 interface LoginFormData {
@@ -52,16 +51,16 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex bg-legal-50">
+    <div className="min-h-screen flex" style={{ backgroundColor: 'var(--color-surface-secondary)' }}>
       {/* Left side - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-professional relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, var(--color-primary-600), var(--color-primary-800))' }}>
         {/* Animated background pattern */}
-        <div className="absolute inset-0 bg-mesh-gradient opacity-30" />
-        <div className="absolute inset-0 bg-gradient-to-br from-counsel-500/20 to-counsel-700/40" />
+        <div className="absolute inset-0 opacity-20" style={{ background: 'radial-gradient(circle at 30% 40%, var(--color-primary-300) 0%, transparent 50%), radial-gradient(circle at 80% 80%, var(--color-primary-400) 0%, transparent 50%)' }} />
+        <div className="absolute inset-0 bg-gradient-to-br from-black/10 to-black/30" />
         
         {/* Floating elements */}
-        <div className="absolute top-20 left-20 w-32 h-32 bg-counsel-300/20 rounded-full blur-xl animate-pulse-legal" />
-        <div className="absolute bottom-20 right-20 w-24 h-24 bg-legal-400/20 rounded-full blur-xl animate-pulse-legal" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-20 left-20 w-32 h-32 rounded-full blur-xl animate-pulse" style={{ backgroundColor: 'var(--color-primary-300)', opacity: 0.2 }} />
+        <div className="absolute bottom-20 right-20 w-24 h-24 rounded-full blur-xl animate-pulse" style={{ backgroundColor: 'var(--color-primary-400)', opacity: 0.2, animationDelay: '1s' }} />
         
         <div className="relative z-10 flex flex-col justify-center items-center text-white p-12">
           <motion.div
@@ -81,7 +80,7 @@ export function LoginPage() {
             </motion.div>
             
             <motion.h1 
-              className="text-5xl font-bold mb-4 bg-gradient-to-r from-white to-counsel-100 bg-clip-text text-transparent"
+              className="text-5xl font-bold mb-4 bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3, duration: 0.8 }}
@@ -90,7 +89,7 @@ export function LoginPage() {
             </motion.h1>
             
             <motion.p 
-              className="text-xl text-counsel-100 mb-12 font-light"
+              className="text-xl text-white/90 mb-12 font-light"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5, duration: 0.8 }}
@@ -106,28 +105,28 @@ export function LoginPage() {
               transition={{ delay: 0.7, duration: 0.8 }}
             >
               <div className="flex items-center space-x-3">
-                <Brain className="h-6 w-6 text-counsel-300" />
-                <span className="text-counsel-100">AI Legal Assistant</span>
+                <AI className="h-6 w-6 text-white/80" />
+                <span className="text-white/90">AI Legal Assistant</span>
               </div>
               <div className="flex items-center space-x-3">
-                <FileText className="h-6 w-6 text-counsel-300" />
-                <span className="text-counsel-100">Contract Management</span>
+                <Documents className="h-6 w-6 text-white/80" />
+                <span className="text-white/90">Contract Management</span>
               </div>
               <div className="flex items-center space-x-3">
-                <Users className="h-6 w-6 text-counsel-300" />
-                <span className="text-counsel-100">Matter Tracking</span>
+                <Clients className="h-6 w-6 text-white/80" />
+                <span className="text-white/90">Matter Tracking</span>
               </div>
               <div className="flex items-center space-x-3">
-                <BarChart3 className="h-6 w-6 text-counsel-300" />
-                <span className="text-counsel-100">Advanced Analytics</span>
+                <Analytics className="h-6 w-6 text-white/80" />
+                <span className="text-white/90">Advanced Analytics</span>
               </div>
               <div className="flex items-center space-x-3">
-                <Shield className="h-6 w-6 text-counsel-300" />
-                <span className="text-counsel-100">Risk Assessment</span>
+                <Scale className="h-6 w-6 text-white/80" />
+                <span className="text-white/90">Risk Assessment</span>
               </div>
               <div className="flex items-center space-x-3">
-                <Clock className="h-6 w-6 text-counsel-300" />
-                <span className="text-counsel-100">Time Tracking</span>
+                <Clock className="h-6 w-6 text-white/80" />
+                <span className="text-white/90">Time Tracking</span>
               </div>
             </motion.div>
           </motion.div>
@@ -142,9 +141,9 @@ export function LoginPage() {
           transition={{ duration: 0.8, delay: 0.3 }}
           className="max-w-md w-full"
         >
-          <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 p-8 relative overflow-hidden">
+          <div className="backdrop-blur-sm rounded-3xl shadow-2xl border p-8 relative overflow-hidden" style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
             {/* Subtle gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-br from-counsel-50/50 to-legal-100/30 rounded-3xl" />
+            <div className="absolute inset-0 rounded-3xl opacity-30" style={{ background: 'linear-gradient(135deg, var(--color-primary-50), var(--color-primary-100))' }} />
             
             <div className="relative z-10">
               <div className="text-center mb-8">
@@ -153,12 +152,13 @@ export function LoginPage() {
                     whileHover={{ scale: 1.1 }}
                     transition={{ type: "spring", stiffness: 300 }}
                   >
-                    <Scale className="h-16 w-16 text-counsel-600 mx-auto mb-4 drop-shadow-lg" />
+                    <Scale className="h-16 w-16 mx-auto mb-4 drop-shadow-lg" style={{ color: 'var(--color-primary-600)' }} />
                   </motion.div>
                 </div>
                 
                 <motion.h2 
-                  className="text-4xl font-bold bg-gradient-to-r from-counsel-700 to-legal-600 bg-clip-text text-transparent mb-3"
+                  className="text-4xl font-bold mb-3"
+                  style={{ color: 'var(--color-text-primary)' }}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5, duration: 0.6 }}
@@ -167,7 +167,8 @@ export function LoginPage() {
                 </motion.h2>
                 
                 <motion.p 
-                  className="text-counsel-600 font-medium"
+                  className="font-medium"
+                  style={{ color: 'var(--color-text-secondary)' }}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.7, duration: 0.6 }}
