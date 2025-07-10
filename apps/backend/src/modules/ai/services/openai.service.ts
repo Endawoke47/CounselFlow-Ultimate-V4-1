@@ -1,1 +1,296 @@
-import { Injectable, Logger } from '@nestjs/common';import { ConfigService } from '@nestjs/config';import OpenAI from 'openai';@Injectable()export class OpenAiService {  private readonly logger = new Logger(OpenAiService.name);  private openai: OpenAI;  private aiProvider: string;  private assistantName: string;  private aiModel: string;  private streamEnabled: boolean;  constructor(private configService: ConfigService) {    const apiKey = this.configService.get<string>('OPENAI_API_KEY');    this.aiProvider = this.configService.get<string>('AI_PROVIDER') || 'openai';    this.assistantName = this.configService.get<string>('AI_ASSISTANT_NAME') || 'Flow';    this.aiModel = this.configService.get<string>('AI_MODEL') || 'gpt-4o';    this.streamEnabled = this.configService.get<string>('AI_STREAM_ENABLED') === 'true';        if (apiKey && apiKey !== 'your_openai_api_key_here' && this.aiProvider === 'openai') {      this.openai = new OpenAI({        apiKey: apiKey,      });      this.logger.log(`✅ OpenAI service initialized with model: ${this.aiModel}, streaming: ${this.streamEnabled}`);    } else {      this.logger.warn(`⚡ AI Provider: ${this.aiProvider}. Using enhanced mock responses for ${this.assistantName}. Add real OpenAI API key for live AI.`);    }  }  async chat(message: string, context?: string): Promise<any> {    if (this.openai && this.aiProvider === 'openai') {      return this.getOpenAIResponse(message, context);    }        return this.getEnhancedMockResponse(message, context);  }  private async getOpenAIResponse(message: string, context?: string): Promise<any> {    try {      const systemPrompt = `You are ${this.assistantName}, an advanced AI legal assistant powered by cutting-edge AI technology.       You are:- Extremely knowledgeable in all areas of law- Fast and responsive in your interactions- Professional yet conversational- Capable of complex legal analysis and reasoning- Specialized in law practice management and legal technology- Always up-to-date with current legal trends and best practicesYour expertise includes:- Legal research and case law analysis- Contract drafting and review- Document analysis and summarization- Legal strategy and case planning- Compliance and regulatory guidance- Law firm operations and management- Risk assessment and mitigation- Client communication strategiesRespond quickly and intelligently. Be concise but comprehensive. Always maintain professional standards while being helpful and engaging.${context ? `\n\nContext: ${context}` : ''}`;      const completion = await this.openai.chat.completions.create({        model: this.aiModel,        messages: [          { role: 'system', content: systemPrompt },          { role: 'user', content: message }        ],        max_tokens: 2000,        temperature: 0.7,        stream: false      });      return {        message: completion.choices[0].message.content,        provider: 'openai',        model: this.aiModel,        assistantName: this.assistantName,        timestamp: new Date().toISOString(),        usage: completion.usage,        fast_response: true,        online: true      };    } catch (error) {      this.logger.error('OpenAI API error:', error);      const fallback = this.getEnhancedMockResponse(message, context);      fallback.error = 'OpenAI API temporarily unavailable';      fallback.online = false;      return fallback;    }  }  private getEnhancedMockResponse(message: string, context?: string): any {    const lowerMessage = message.toLowerCase();    let response = '';    if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey') || lowerMessage.includes('flow')) {      response = `Hello! I'm ${this.assistantName}, your advanced AI legal assistant. I'm ready to provide fast, intelligent responses on:\n\n` +        `⚡ **Instant Legal Research** - Real-time case law and statute analysis\n` +        `📝 **Smart Contract Drafting** - AI-powered legal document creation\n` +        `🔍 **Document Intelligence** - Advanced analysis and risk assessment\n` +        `🎯 **Strategic Legal Advice** - Data-driven insights and recommendations\n` +        `⚖️ **Compliance Automation** - Real-time regulatory guidance\n\n` +        `I'm designed to be as responsive and intelligent as ChatGPT, but specialized for legal professionals. What can I help you accomplish today?`;    }        else if (lowerMessage.includes('research') || lowerMessage.includes('case law') || lowerMessage.includes('statute') || lowerMessage.includes('precedent')) {      response = `🔍 **${this.assistantName} Legal Research Engine Activated**\n\n` +        `I'm analyzing your query: "${message}"\n\n` +        `**Intelligent Research Strategy:**\n` +        `• **AI-Powered Source Discovery** - Scanning millions of legal documents\n` +        `• **Relevance Scoring** - Ranking results by case similarity and precedential value\n` +        `• **Jurisdiction Intelligence** - Auto-detecting applicable legal frameworks\n` +        `• **Citation Verification** - Real-time validation of legal authorities\n` +        `• **Trend Analysis** - Identifying emerging legal patterns and developments\n\n` +        `**Ready to deliver comprehensive research in seconds.** What specific legal question should I investigate?`;    }        else if (lowerMessage.includes('contract') || lowerMessage.includes('agreement') || lowerMessage.includes('draft')) {      response = `📝 **${this.assistantName} Contract Intelligence Activated**\n\n` +        `**Advanced Contract AI Capabilities:**\n` +        `• **Smart Drafting** - AI-generated clauses based on best practices\n` +        `• **Risk Prediction** - ML-powered risk assessment and mitigation\n` +        `• **Clause Intelligence** - Automated provision optimization\n` +        `• **Negotiation Insights** - Strategic recommendations for better terms\n` +        `• **Compliance Scanning** - Real-time regulatory requirement checking\n\n` +        `**Contract Type Auto-Detection:** What type of agreement are you working with? I can instantly generate professional contracts or provide deep analysis with AI precision.`;    }        else if (lowerMessage.includes('analyze') || lowerMessage.includes('review') || lowerMessage.includes('document')) {      response = `🧠 **${this.assistantName} Document Intelligence Engine**\n\n` +        `**Lightning-Fast Analysis Capabilities:**\n` +        `• **Instant Summarization** - Key points extracted in milliseconds\n` +        `• **Smart Risk Detection** - AI-powered vulnerability identification\n` +        `• **Compliance Verification** - Real-time regulatory checking\n` +        `• **Key Term Extraction** - Automated identification of critical provisions\n` +        `• **Comparative Analysis** - Benchmarking against industry standards\n\n` +        `**Ready for immediate processing.** Upload your document and I'll provide comprehensive analysis faster than traditional review methods.`;    }        else {      response = `🤖 **${this.assistantName} AI Legal Assistant - Ready**\n\n` +        `I understand you're asking: *"${message}"*\n\n` +        `**My Advanced Capabilities:**\n` +        `• **Real-Time Processing** - Instant responses with ChatGPT-level intelligence\n` +        `• **Legal Expertise** - Trained on millions of legal documents and cases\n` +        `• **Strategic Thinking** - Multi-step reasoning for complex legal problems\n` +        `• **Practice Efficiency** - Streamlined workflows for legal professionals\n` +        `• **Risk Intelligence** - Predictive analytics for legal decision-making\n\n` +        `**I'm designed to be fast, intelligent, and always online.** How can I apply my AI capabilities to solve your specific legal challenge?`;    }    return {      message: response,      provider: 'enhanced-ai-mock',      model: 'flow-intelligent-legal-assistant',      assistantName: this.assistantName,      timestamp: new Date().toISOString(),      fast_response: true,      online: true,      intelligence_level: 'advanced',      ready_for_openai: true    };  }  async summarize(text: string): Promise<any> {    if (this.openai && this.aiProvider === 'openai') {      try {        const completion = await this.openai.chat.completions.create({          model: this.aiModel,          messages: [            {              role: 'system',              content: `You are ${this.assistantName}, an expert legal document summarization AI. Provide concise, accurate summaries.`            },            {              role: 'user',              content: `Please summarize this legal text:\n\n${text}`            }          ],          max_tokens: 800,          temperature: 0.3,        });        return {          summary: completion.choices[0].message.content,          provider: 'openai',          model: this.aiModel,          fast_response: true,          timestamp: new Date().toISOString(),        };      } catch (error) {        this.logger.error('OpenAI summarization error:', error);        return this.getMockSummary(text);      }    }    return this.getMockSummary(text);  }  private getMockSummary(text: string): any {    const wordCount = text.split(' ').length;    const hasLegalTerms = /contract|agreement|liability|obligation|breach|damages|jurisdiction|governing law|dispute|arbitration|confidential|indemnify|warranty|representations|compliance/i.test(text);        let summary = `🧠 **${this.assistantName} Document Intelligence Summary**\n\n`;        if (hasLegalTerms) {      summary += `**Document Analysis (${wordCount} words):**\n` +        `• **Document Type**: Legal agreement or contract-related document\n` +        `• **Key Legal Elements**: Contains provisions for obligations, liabilities, and governing terms\n` +        `• **Risk Indicators**: Standard legal protections and compliance requirements identified\n` +        `• **Structure**: Professional legal document with standard contractual language\n\n` +        `**AI-Powered Insights**: This document appears to be a formal legal instrument requiring careful review of key terms, obligations, and risk allocations.`;    } else {      summary += `**Document Analysis (${wordCount} words):**\n` +        `• **Content Type**: General business or informational document\n` +        `• **Key Themes**: Business operations, procedures, or informational content\n` +        `• **Structure**: Standard business document format\n` +        `• **Recommendations**: Consider legal review if business decisions are involved\n\n` +        `**AI Assessment**: Document contains business-relevant information that may benefit from legal consultation for implementation.`;    }    return {      summary,      provider: 'flow-intelligent-mock',      model: 'document-intelligence',      fast_response: true,      timestamp: new Date().toISOString(),      word_count: wordCount,      legal_content_detected: hasLegalTerms    };  }  async extractKeyTerms(text: string): Promise<any> {    if (this.openai && this.aiProvider === 'openai') {      try {        const completion = await this.openai.chat.completions.create({          model: this.aiModel,          messages: [            {              role: 'system',              content: `You are ${this.assistantName}, an AI expert in legal document analysis. Extract key terms from legal documents.`            },            {              role: 'user',              content: `Extract key terms from this text:\n\n${text}`            }          ],          max_tokens: 1000,          temperature: 0.2,        });        return {          keyTerms: completion.choices[0].message.content,          provider: 'openai',          model: this.aiModel,          fast_response: true,          timestamp: new Date().toISOString(),        };      } catch (error) {        this.logger.error('OpenAI key terms extraction error:', error);        return this.getMockKeyTerms(text);      }    }    return this.getMockKeyTerms(text);  }  private getMockKeyTerms(text: string): any {    const terms = {      parties: [],      dates: [],      amounts: [],      obligations: [],      rights: [],      risks: []    };    const partyMatches = text.match(/\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*(?:\s+(?:Inc|LLC|Corp|Company|Limited)\.?)?/g);    if (partyMatches) {      terms.parties = [...new Set(partyMatches.slice(0, 5))];    }    const dateMatches = text.match(/\b(?:\d{1,2}\/\d{1,2}\/\d{4}|\d{4}-\d{2}-\d{2}|(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{4})/g);    if (dateMatches) {      terms.dates = [...new Set(dateMatches)];    }    const amountMatches = text.match(/\$[\d,]+(?:\.\d{2})?/g);    if (amountMatches) {      terms.amounts = [...new Set(amountMatches)];    }    const obligationKeywords = ['shall', 'must', 'required to', 'obligated', 'responsible for', 'duty to'];    terms.obligations = obligationKeywords.filter(keyword => text.toLowerCase().includes(keyword));    const rightsKeywords = ['entitled to', 'right to', 'may', 'permitted', 'authorized'];    terms.rights = rightsKeywords.filter(keyword => text.toLowerCase().includes(keyword));    const riskKeywords = ['liable', 'damages', 'breach', 'default', 'penalty', 'termination'];    terms.risks = riskKeywords.filter(keyword => text.toLowerCase().includes(keyword));    const keyTermsResponse = `🔍 **${this.assistantName} Key Terms Analysis**\n\n` +      `**Parties Identified**: ${terms.parties.length > 0 ? terms.parties.join(', ') : 'None detected'}\n` +      `**Important Dates**: ${terms.dates.length > 0 ? terms.dates.join(', ') : 'None detected'}\n` +      `**Monetary Amounts**: ${terms.amounts.length > 0 ? terms.amounts.join(', ') : 'None detected'}\n` +      `**Obligations Found**: ${terms.obligations.length} obligation indicators\n` +      `**Rights Identified**: ${terms.rights.length} rights provisions\n` +      `**Risk Factors**: ${terms.risks.length} risk-related terms\n\n` +      `**AI Intelligence**: Advanced pattern recognition identified ${Object.values(terms).flat().length} total key elements for legal review.`;    return {      keyTerms: keyTermsResponse,      structured_terms: terms,      provider: 'flow-intelligent-extraction',      model: 'legal-term-analyzer',      fast_response: true,      timestamp: new Date().toISOString(),      analysis_confidence: 'high'    };  }}
+import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import OpenAI from 'openai';
+
+@Injectable()
+export class OpenAiService {
+  private readonly logger = new Logger(OpenAiService.name);
+  private openai: OpenAI;
+  private aiProvider: string;
+  private assistantName: string;
+  private aiModel: string;
+  private streamEnabled: boolean;
+  private maxTokens: number;
+  private temperature: number;
+
+  constructor(private configService: ConfigService) {
+    const apiKey = this.configService.get<string>('OPENAI_API_KEY');
+    this.aiProvider = this.configService.get<string>('AI_PROVIDER') || 'openai';
+    this.assistantName = this.configService.get<string>('AI_ASSISTANT_NAME') || 'Flow';
+    this.aiModel = this.configService.get<string>('OPENAI_MODEL') || 'gpt-4o';
+    this.streamEnabled = this.configService.get<string>('AI_STREAM_ENABLED') === 'true';
+    this.maxTokens = parseInt(this.configService.get<string>('AI_MAX_TOKENS') || '2000');
+    this.temperature = parseFloat(this.configService.get<string>('AI_TEMPERATURE') || '0.7');
+    
+    if (apiKey && apiKey !== 'your_openai_api_key_here') {
+      this.openai = new OpenAI({
+        apiKey: apiKey,
+      });
+      this.logger.log(`✅ OpenAI service initialized with model: ${this.aiModel}, streaming: ${this.streamEnabled}, max_tokens: ${this.maxTokens}`);
+    } else {
+      this.logger.warn(`⚡ AI Provider: ${this.aiProvider}. Using enhanced mock responses for ${this.assistantName}. Add real OpenAI API key for live AI.`);
+    }
+  }
+
+  async chat(message: string, context?: string, conversationHistory?: any[]): Promise<any> {
+    if (this.openai) {
+      return this.getOpenAIResponse(message, context, conversationHistory);
+    }
+    
+    return this.getEnhancedMockResponse(message, context);
+  }
+
+  async summarize(text: string): Promise<any> {
+    if (this.openai) {
+      const prompt = `Please provide a concise, professional summary of the following legal document or text. Focus on key points, important clauses, deadlines, and potential areas of concern:\n\n${text}`;
+      return this.getOpenAIResponse(prompt);
+    }
+    return this.getMockSummary(text);
+  }
+
+  async extractKeyTerms(text: string): Promise<any> {
+    if (this.openai) {
+      const prompt = `Analyze the following legal text and extract key terms, important clauses, deadlines, parties involved, obligations, and any critical legal concepts. Format the response clearly with categories:\n\n${text}`;
+      return this.getOpenAIResponse(prompt);
+    }
+    return this.getMockKeyTerms(text);
+  }
+
+  async assessRisk(content: string, type: 'contract' | 'matter' | 'general'): Promise<any> {
+    if (this.openai) {
+      const prompt = `As an expert legal AI assistant, please assess the potential risks in the following ${type}. Provide a structured analysis including:
+1. High-risk areas (immediate attention required)
+2. Medium-risk areas (should be addressed)
+3. Low-risk areas (monitor)
+4. Specific recommendations for risk mitigation
+5. Any red flags or critical issues
+
+Content to analyze:
+${content}`;
+      return this.getOpenAIResponse(prompt);
+    }
+    return this.getMockRiskAssessment(content, type);
+  }
+
+  async analyzeContract(contractText: string, contractType?: string): Promise<any> {
+    if (this.openai) {
+      const prompt = `Please provide a comprehensive analysis of this ${contractType || 'legal contract'}. Include:
+
+1. **Executive Summary**: Brief overview of the contract's purpose and key terms
+2. **Key Terms & Obligations**: Main responsibilities of each party
+3. **Risk Assessment**: Potential risks categorized by severity
+4. **Missing or Unclear Clauses**: What should be added or clarified
+5. **Compliance Considerations**: Regulatory or legal compliance issues
+6. **Recommendations**: Specific suggestions for improvement
+
+Contract text:
+${contractText}`;
+      return this.getOpenAIResponse(prompt);
+    }
+    return this.getMockContractAnalysis(contractText, contractType);
+  }
+
+  async generateDocument(documentType: string, parameters: any): Promise<any> {
+    if (this.openai) {
+      const prompt = `Generate a professional ${documentType} with the following specifications:
+
+Parameters: ${JSON.stringify(parameters, null, 2)}
+
+Requirements:
+- Use proper legal language and structure
+- Include all necessary clauses and provisions
+- Ensure compliance with standard legal practices
+- Make it comprehensive but clear
+- Include placeholder text where specific details need to be filled in
+
+Please format the document professionally with appropriate sections and numbering.`;
+      return this.getOpenAIResponse(prompt);
+    }
+    return this.getMockDocumentGeneration(documentType, parameters);
+  }
+
+  async generateInsights(data: any, type: 'dashboard' | 'matter' | 'contract'): Promise<any> {
+    if (this.openai) {
+      const prompt = `Analyze the following ${type} data and provide intelligent insights, trends, recommendations, and actionable advice:
+
+Data: ${JSON.stringify(data, null, 2)}
+
+Please provide insights in a structured format with specific recommendations for improving legal operations and outcomes.`;
+      return this.getOpenAIResponse(prompt);
+    }
+    return this.getMockInsights(data, type);
+  }
+
+  private async getOpenAIResponse(message: string, context?: string, conversationHistory?: any[]): Promise<any> {
+    try {
+      const systemPrompt = `You are ${this.assistantName}, an advanced AI legal assistant specializing in legal research, contract analysis, document drafting, and providing strategic legal guidance. You are knowledgeable, professional, and helpful.
+
+Key capabilities:
+- Legal research and analysis
+- Contract drafting and review
+- Risk assessment and mitigation strategies
+- Regulatory compliance guidance
+- Strategic legal advice
+
+Always provide accurate, well-reasoned legal insights while noting when users should consult with qualified attorneys for specific legal advice. Use clear, professional language and structure your responses logically.`;
+
+      const messages: any[] = [
+        { role: 'system', content: systemPrompt }
+      ];
+
+      // Add conversation history if provided
+      if (conversationHistory && conversationHistory.length > 0) {
+        messages.push(...conversationHistory.slice(-10)); // Keep last 10 messages for context
+      }
+
+      // Add context if provided
+      if (context) {
+        messages.push({
+          role: 'system',
+          content: `Additional context: ${context}`
+        });
+      }
+
+      // Add current message
+      messages.push({ role: 'user', content: message });
+
+      const completion = await this.openai.chat.completions.create({
+        model: this.aiModel,
+        messages: messages,
+        max_tokens: this.maxTokens,
+        temperature: this.temperature,
+        stream: false,
+        presence_penalty: 0.1,
+        frequency_penalty: 0.1
+      });
+
+      return {
+        message: completion.choices[0].message.content,
+        provider: 'openai',
+        model: this.aiModel,
+        timestamp: new Date().toISOString(),
+        assistantName: this.assistantName,
+        usage: completion.usage
+      };
+    } catch (error) {
+      this.logger.error('OpenAI API error:', error);
+      // Fallback to enhanced mock response
+      return this.getEnhancedMockResponse(message, context);
+    }
+  }
+
+  private getEnhancedMockResponse(message: string, context?: string): any {
+    return {
+      message: `Hello! I'm ${this.assistantName}, your AI legal assistant. I'm ready to help with: ${message}`,
+      provider: 'enhanced-ai-mock',
+      model: 'flow-intelligent-legal-assistant',
+      timestamp: new Date().toISOString(),
+      fast_response: true
+    };
+  }
+
+  private getMockSummary(text: string): any {
+    const wordCount = text.split(' ').length;
+    return {
+      summary: `Document summary: ${wordCount} words analyzed. Key legal elements identified.`,
+      provider: 'flow-intelligent-mock',
+      timestamp: new Date().toISOString(),
+      word_count: wordCount
+    };
+  }
+
+  private getMockKeyTerms(text: string): any {
+    return {
+      keyTerms: 'Key terms extracted from document analysis.',
+      provider: 'flow-intelligent-extraction',
+      timestamp: new Date().toISOString()
+    };
+  }
+
+  private getMockRiskAssessment(content: string, type: string): any {
+    return {
+      riskAssessment: `Risk assessment for ${type}: Low to medium risk factors identified.`,
+      provider: 'flow-intelligent-risk',
+      timestamp: new Date().toISOString()
+    };
+  }
+
+  private getMockInsights(data: any, type: string): any {
+    return {
+      insights: `AI insights for ${type}: Performance analytics and recommendations available.`,
+      provider: 'flow-intelligent-insights',
+      timestamp: new Date().toISOString()
+    };
+  }
+
+  private getMockContractAnalysis(contractText: string, contractType?: string): any {
+    return {
+      message: `Contract Analysis for ${contractType || 'Legal Contract'}:
+
+**Executive Summary:**
+This contract establishes key legal obligations between parties with standard commercial terms.
+
+**Key Terms & Obligations:**
+- Primary obligations identified
+- Payment terms and schedules
+- Performance requirements
+- Termination conditions
+
+**Risk Assessment:**
+- Medium risk: Standard commercial risks present
+- Recommendation: Review termination clauses
+- Consider additional liability protections
+
+**Missing or Unclear Clauses:**
+- Force majeure provisions should be clarified
+- Dispute resolution mechanism needs detail
+- Data protection clauses may need updating
+
+**Compliance Considerations:**
+- Appears compliant with standard commercial law
+- Consider jurisdiction-specific requirements
+
+**Recommendations:**
+1. Strengthen termination provisions
+2. Add detailed dispute resolution process
+3. Include comprehensive liability caps
+4. Update data protection language`,
+      provider: 'flow-intelligent-contract-analysis',
+      timestamp: new Date().toISOString(),
+      contractType: contractType || 'General Contract'
+    };
+  }
+
+  private getMockDocumentGeneration(documentType: string, parameters: any): any {
+    return {
+      message: `# ${documentType.toUpperCase()}
+
+**Generated Document Template**
+
+This is a professionally generated ${documentType} template based on your specified parameters:
+
+${JSON.stringify(parameters, null, 2)}
+
+## Key Sections:
+1. **Introduction and Parties**
+2. **Terms and Conditions** 
+3. **Obligations and Rights**
+4. **Termination Provisions**
+5. **Governing Law**
+
+## Important Notes:
+- This template should be reviewed by qualified legal counsel
+- Customize sections marked with [PLACEHOLDER]
+- Ensure compliance with applicable laws and regulations
+- Consider jurisdiction-specific requirements
+
+---
+*Generated by Flow AI Legal Assistant*
+*${new Date().toLocaleDateString()}*`,
+      provider: 'flow-intelligent-document-generation',
+      timestamp: new Date().toISOString(),
+      documentType: documentType,
+      parameters: parameters
+    };
+  }
+}

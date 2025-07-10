@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get, Patch } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { AiService } from './ai.service';
 import { ChatMessageDto } from './dto/chat-message.dto';
@@ -61,5 +61,27 @@ export class AiController {
   @Post('assess-risk')
   async assessRisk(@Body() { content, type }: { content: string; type: 'contract' | 'matter' | 'general' }) {
     return this.aiService.assessRisk(content, type);
+  }
+
+  @ApiOperation({ summary: 'Generate insights' })
+  @ApiResponse({ status: 200, description: 'Insights generated successfully' })
+  @Post('generate-insights')
+  async generateInsights(@Body() { data, type }: { data: any; type: 'dashboard' | 'matter' | 'contract' }) {
+    return this.aiService.generateInsights(data, type);
+  }
+
+  @ApiOperation({ summary: 'Get AI provider status' })
+  @ApiResponse({ status: 200, description: 'Provider status retrieved successfully' })
+  @Get('provider-status')
+  async getProviderStatus() {
+    return this.aiService.getProviderStatus();
+  }
+
+  @ApiOperation({ summary: 'Switch AI provider' })
+  @ApiResponse({ status: 200, description: 'AI provider switched successfully' })
+  @Patch('switch-provider')
+  async switchProvider(@Body() { provider }: { provider: 'openai' | 'deepseek' | 'mock' }) {
+    await this.aiService.switchProvider(provider);
+    return { message: `Switched to ${provider} provider`, provider };
   }
 }

@@ -1,6 +1,7 @@
 import axios from 'axios'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1'
+// @ts-ignore
+const API_BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:3002/api/v1'
 
 // Create axios instance
 const api = axios.create({
@@ -74,8 +75,8 @@ export const contractsApi = {
 
 // AI API
 export const aiApi = {
-  chat: (message: string, context?: string) =>
-    api.post('/ai/chat', { message, context }),
+  chat: (message: string, context?: string, conversationHistory?: any[]) =>
+    api.post('/ai/chat', { message, context, conversationHistory }),
   legalResearch: (query: string, jurisdiction?: string, keywords?: string[]) =>
     api.post('/ai/research', { query, jurisdiction, keywords }),
   analyzeContract: (contractText: string, contractType?: string) =>
@@ -88,6 +89,12 @@ export const aiApi = {
     api.post('/ai/extract-terms', { text }),
   assessRisk: (content: string, type: 'contract' | 'matter' | 'general') =>
     api.post('/ai/assess-risk', { content, type }),
+  generateInsights: (data: any, type: 'dashboard' | 'matter' | 'contract') =>
+    api.post('/ai/generate-insights', { data, type }),
+  getProviderStatus: () =>
+    api.get('/ai/provider-status'),
+  switchProvider: (provider: 'openai' | 'deepseek' | 'mock') =>
+    api.patch('/ai/switch-provider', { provider }),
 }
 
 export default api

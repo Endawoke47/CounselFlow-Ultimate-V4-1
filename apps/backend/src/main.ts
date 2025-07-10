@@ -17,7 +17,7 @@ async function bootstrap() {
   app.use(cors({
     origin: process.env.NODE_ENV === 'production' 
       ? ['https://counselflow-ultimate.com'] 
-      : ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:5174'],
+      : ['http://localhost:3000', 'http://localhost:3002', 'http://localhost:5173', 'http://localhost:5174'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
@@ -44,7 +44,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
-  const port = process.env.PORT || 3001;
+  const port = process.env.PORT || 3002;
   await app.listen(port);
   
   console.log(`🚀 CounselFlow Ultimate Backend running on: http://localhost:${port}`);

@@ -24,11 +24,17 @@ import {
   Database,
   Plus,
   Grid3X3,
-  ChevronDown
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  AlertTriangle,
+  Award,
+  CheckSquare
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { motion, AnimatePresence } from 'framer-motion'
 import { SimpleSignOut } from '../SimpleSignOut'
+import { CFLogo } from '../ui/CFLogo'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -36,6 +42,7 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showSidebarUserMenu, setShowSidebarUserMenu] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
@@ -72,26 +79,32 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
-    { name: 'Matters', href: '/matters', icon: Briefcase },
-    { name: 'Contracts', href: '/contracts', icon: FileText },
+    
+    // 10 Core Legal Management Modules
+    { name: 'Entity Management', href: '/entity-management', icon: Building },
+    { name: 'Contract Management', href: '/contracts', icon: FileText },
+    { name: 'Dispute Management', href: '/disputes', icon: Gavel },
+    { name: 'Matter Management', href: '/matters', icon: Briefcase },
+    { name: 'Risk Management', href: '/risk-management', icon: AlertTriangle },
+    { name: 'Policy Management', href: '/policy-management', icon: Shield },
+    { name: 'Knowledge Management', href: '/knowledge', icon: Database },
+    { name: 'Licensing & Regulatory', href: '/licensing-regulatory', icon: Award },
+    { name: 'Outsourcing & Legal Spend', href: '/outsourcing-spend', icon: TrendingUp },
+    { name: 'Task Management', href: '/task-management', icon: CheckSquare },
+    
+    // Supporting Modules
     { name: 'Clients', href: '/clients', icon: Users },
     { name: 'Documents', href: '/documents', icon: Archive },
     { name: 'AI Assistant', href: '/ai', icon: MessageSquare },
-    { name: 'Legal Intake', href: '/intake', icon: Inbox },
-    { name: 'IP Management', href: '/ip-management', icon: Shield },
-    { name: 'Entity Management', href: '/entity-management', icon: Building },
     { name: 'Compliance', href: '/compliance', icon: Scale },
-    { name: 'Privacy & Data', href: '/privacy', icon: Shield },
-    { name: 'Disputes', href: '/disputes', icon: Gavel },
-    { name: 'Spend Analytics', href: '/spend-analytics', icon: TrendingUp },
-    { name: 'Knowledge Base', href: '/knowledge', icon: Database },
     { name: 'Settings', href: '/settings', icon: Settings },
   ]
 
   const quickActions = [
-    { name: 'New Client', action: () => navigate('/clients'), icon: Users },
-    { name: 'New Matter', action: () => navigate('/matters'), icon: Briefcase },
+    { name: 'New Entity', action: () => navigate('/entity-management'), icon: Building },
     { name: 'New Contract', action: () => navigate('/contracts'), icon: FileText },
+    { name: 'New Matter', action: () => navigate('/matters'), icon: Briefcase },
+    { name: 'New Task', action: () => navigate('/task-management'), icon: CheckSquare },
     { name: 'AI Assist', action: () => navigate('/ai'), icon: Brain },
   ]
 
@@ -134,7 +147,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             >
               <div className="flex items-center justify-between px-gutter py-6 border-b border-white/20">
                 <div className="flex items-center space-x-2">
-                  <Scale className="h-8 w-8 text-white" />
+                  <CFLogo className="text-primary" />
                   <span className="text-xl font-bold text-white">CounselFlow</span>
                 </div>
                 <button
@@ -225,66 +238,207 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       </AnimatePresence>
 
       {/* Desktop sidebar - Fixed with CounselFlow primary teal background */}
-      <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-72 lg:flex-col">
-        <div className="flex flex-col flex-grow bg-primary border-r border-primary shadow-counsel-lg">
-          <div className="flex items-center flex-shrink-0 px-gutter py-6">
-            <Scale className="h-8 w-8 text-white" />
-            <span className="ml-2 text-xl font-bold text-white">CounselFlow</span>
+      <div className={`hidden lg:fixed lg:inset-y-0 lg:flex lg:flex-col transition-all duration-500 ease-in-out ${
+        sidebarCollapsed ? 'lg:w-16' : 'lg:w-72'
+      }`}>
+        <div className="flex flex-col flex-grow bg-primary border-r border-primary shadow-counsel-lg relative overflow-hidden">
+          <div className="flex items-center flex-shrink-0 px-gutter py-6 relative">
+            {/* Logo and text section */}
+            <div className="flex items-center flex-1">
+              <motion.div
+                initial={false}
+                animate={{ 
+                  opacity: sidebarCollapsed ? 0 : 1,
+                  x: sidebarCollapsed ? -20 : 0
+                }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                className={`flex items-center ${sidebarCollapsed ? 'hidden' : 'flex'}`}
+              >
+                <CFLogo className="text-primary" />
+                <span className="ml-2 text-xl font-bold text-white">CounselFlow</span>
+              </motion.div>
+              
+              <motion.div
+                initial={false}
+                animate={{ 
+                  opacity: sidebarCollapsed ? 1 : 0,
+                  scale: sidebarCollapsed ? 1 : 0.8
+                }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                className={`${sidebarCollapsed ? 'flex' : 'hidden'} items-center justify-center w-full`}
+              >
+                <CFLogo className="text-primary" />
+              </motion.div>
+            </div>
+            
+            {/* Collapse/Expand Button - Always visible next to logo */}
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className="ml-2 w-8 h-8 bg-white/10 hover:bg-white/20 rounded-lg flex items-center justify-center transition-all duration-200 z-10 flex-shrink-0"
+              title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              <motion.div
+                initial={false}
+                animate={{ rotate: sidebarCollapsed ? 180 : 0 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+              >
+                <ChevronLeft className="h-5 w-5 text-white" />
+              </motion.div>
+            </motion.button>
           </div>
           <div className="mt-4 flex-1 flex flex-col overflow-y-auto">
             <nav className="flex-1 px-4 space-y-1">
-              {navigation.map((item) => {
+              {navigation.map((item, index) => {
                 const Icon = item.icon
                 const isActive = location.pathname === item.href
                 return (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    className={`group flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-200 ${
-                      isActive
-                        ? 'bg-white/20 text-white shadow-soft'
-                        : 'text-white/80 hover:bg-white/10 hover:text-white hover:scale-105'
-                    }`}
+                  <motion.div 
+                    key={item.name} 
+                    className="relative group"
+                    initial={false}
+                    animate={{ 
+                      x: sidebarCollapsed ? 0 : 0,
+                      transition: { delay: index * 0.05 }
+                    }}
                   >
-                    <Icon className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
-                    <span className="font-medium">{item.name}</span>
-                  </Link>
+                    <Link
+                      to={item.href}
+                      className={`group flex items-center ${
+                        sidebarCollapsed ? 'justify-center px-2' : 'space-x-3 px-3'
+                      } py-3 rounded-lg transition-all duration-300 ease-in-out relative ${
+                        isActive
+                          ? 'bg-white/20 text-white shadow-soft'
+                          : 'text-white/80 hover:bg-white/10 hover:text-white'
+                      }`}
+                    >
+                      <Icon className={`h-5 w-5 transition-all duration-300 group-hover:scale-110 ${
+                        sidebarCollapsed ? 'mx-auto' : ''
+                      }`} />
+                      
+                      <motion.span 
+                        initial={false}
+                        animate={{ 
+                          opacity: sidebarCollapsed ? 0 : 1,
+                          x: sidebarCollapsed ? -10 : 0,
+                          width: sidebarCollapsed ? 0 : 'auto'
+                        }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                        className={`font-medium overflow-hidden ${sidebarCollapsed ? 'w-0' : 'w-auto'}`}
+                      >
+                        {item.name}
+                      </motion.span>
+                    </Link>
+                    
+                    {/* Enhanced Tooltip for collapsed state */}
+                    <AnimatePresence>
+                      {sidebarCollapsed && (
+                        <motion.div 
+                          initial={{ opacity: 0, x: -10, scale: 0.8 }}
+                          animate={{ opacity: 1, x: 0, scale: 1 }}
+                          exit={{ opacity: 0, x: -10, scale: 0.8 }}
+                          transition={{ duration: 0.2 }}
+                          className="absolute left-full ml-3 top-1/2 transform -translate-y-1/2 bg-gray-900 text-white text-sm px-3 py-2 rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50 shadow-lg"
+                        >
+                          {item.name}
+                          {/* Arrow pointing to sidebar */}
+                          <div className="absolute right-full top-1/2 transform -translate-y-1/2 border-4 border-transparent border-r-gray-900"></div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
                 )
               })}
             </nav>
             
-            {/* WORKING Sidebar User Profile Section */}
+            {/* Enhanced Sidebar User Profile Section */}
             <div className="px-4 pb-4 mt-auto">
               <div className="relative">
-                <button
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    console.log('🟢 SIDEBAR USER MENU CLICKED!')
-                    setShowSidebarUserMenu(!showSidebarUserMenu)
+                <motion.div
+                  initial={false}
+                  animate={{ 
+                    opacity: sidebarCollapsed ? 0 : 1,
+                    height: sidebarCollapsed ? 0 : 'auto'
                   }}
-                  className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-white hover:bg-white hover:bg-opacity-10 transition-colors"
-                  style={{ zIndex: 1000 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  className={`${sidebarCollapsed ? 'hidden' : 'block'} overflow-hidden`}
                 >
-                  <div className="h-10 w-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                    <User className="h-5 w-5 text-white" />
-                  </div>
-                  <div className="flex-1 text-left">
-                    <div className="text-sm font-medium text-white">
-                      {user ? `${user.firstName} ${user.lastName}` : 'John Doe'}
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      console.log('🟢 SIDEBAR USER MENU CLICKED!')
+                      setShowSidebarUserMenu(!showSidebarUserMenu)
+                    }}
+                    className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-white hover:bg-white hover:bg-opacity-10 transition-all duration-200 group"
+                    style={{ zIndex: 1000 }}
+                  >
+                    <motion.div 
+                      whileHover={{ scale: 1.05 }}
+                      className="h-10 w-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center"
+                    >
+                      <User className="h-5 w-5 text-white" />
+                    </motion.div>
+                    <div className="flex-1 text-left">
+                      <div className="text-sm font-medium text-white">
+                        {user ? `${user.firstName} ${user.lastName}` : 'John Doe'}
+                      </div>
+                      <div className="text-xs text-white text-opacity-60">
+                        {user?.title || 'Senior Partner'}
+                      </div>
                     </div>
-                    <div className="text-xs text-white text-opacity-60">
-                      {user?.title || 'Senior Partner'}
+                    <motion.div
+                      animate={{ rotate: showSidebarUserMenu ? 180 : 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <ChevronDown className="h-4 w-4 text-white text-opacity-60" />
+                    </motion.div>
+                  </button>
+                </motion.div>
+
+                {/* Collapsed state user profile */}
+                <motion.div
+                  initial={false}
+                  animate={{ 
+                    opacity: sidebarCollapsed ? 1 : 0,
+                    scale: sidebarCollapsed ? 1 : 0.8
+                  }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  className={`${sidebarCollapsed ? 'block' : 'hidden'} group relative`}
+                >
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      console.log('🟢 SIDEBAR USER MENU CLICKED!')
+                      setShowSidebarUserMenu(!showSidebarUserMenu)
+                    }}
+                    className="w-full flex items-center justify-center px-3 py-3 rounded-lg text-white hover:bg-white hover:bg-opacity-10 transition-colors"
+                    style={{ zIndex: 1000 }}
+                  >
+                    <div className="h-10 w-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                      <User className="h-5 w-5 text-white" />
                     </div>
-                  </div>
-                  <ChevronDown className={`h-4 w-4 text-white text-opacity-60 transition-transform ${
-                    showSidebarUserMenu ? 'rotate-180' : ''
-                  }`} />
-                </button>
+                  </motion.button>
+                  
+                  {/* Enhanced Tooltip for collapsed user menu */}
+                  <motion.div 
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -10 }}
+                    className="absolute left-full ml-3 top-1/2 transform -translate-y-1/2 bg-gray-900 text-white text-sm px-3 py-2 rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50 shadow-lg"
+                  >
+                    {user ? `${user.firstName} ${user.lastName}` : 'John Doe'}
+                    <div className="absolute right-full top-1/2 transform -translate-y-1/2 border-4 border-transparent border-r-gray-900"></div>
+                  </motion.div>
+                </motion.div>
 
                 {showSidebarUserMenu && (
                   <div 
-                    className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2"
+                    className={`absolute ${sidebarCollapsed ? 'left-full ml-2 bottom-0' : 'bottom-full left-0 right-0 mb-2'} bg-white rounded-lg shadow-lg border border-gray-200 py-2 ${sidebarCollapsed ? 'w-48' : ''}`}
                     style={{ zIndex: 1001 }}
                   >
                     <button
@@ -309,7 +463,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </div>
       </div>
 
-      <div className="lg:pl-72">
+      <motion.div 
+        initial={false}
+        animate={{ 
+          paddingLeft: sidebarCollapsed ? '4rem' : '18rem' // 16 = 4rem, 72 = 18rem
+        }}
+        transition={{ duration: 0.5, ease: "easeInOut" }}
+        className="lg:pl-72 transition-all duration-500 ease-in-out"
+      >
         {/* Enhanced Topbar - Clean white background with professional spacing */}
         <header className="bg-soft-white border-b border-muted-gray px-4 lg:px-gutter py-4 shadow-soft sticky top-0 z-30">
           <div className="flex items-center justify-between max-w-app mx-auto">
@@ -569,7 +730,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             {children}
           </div>
         </main>
-      </div>
+      </motion.div>
     </div>
   )
 }

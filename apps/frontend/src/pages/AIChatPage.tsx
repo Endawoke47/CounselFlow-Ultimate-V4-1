@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Send, User, Loader2, RefreshCw, Copy, ThumbsUp, ThumbsDown } from 'lucide-react'
+import { Send, User, Loader2, RefreshCw, Copy, ThumbsUp, ThumbsDown, Settings, Zap, Brain } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { aiApi } from '../services/api'
+import toast from 'react-hot-toast'
 
 interface Message {
   id: string
@@ -9,6 +10,22 @@ interface Message {
   content: string
   timestamp: Date
   isTyping?: boolean
+  provider?: string
+  model?: string
+  usage?: any
+}
+
+interface ProviderStatus {
+  currentProvider: string
+  available: {
+    openai: boolean
+    deepseek: boolean
+    mock: boolean
+  }
+  models: {
+    openai: string
+    deepseek: string
+  }
 }
 
 export function AIChatPage() {
@@ -16,14 +33,54 @@ export function AIChatPage() {
     {
       id: '1',
       type: 'ai',
-      content: "Hello! I'm Flow, your AI Legal Assistant. I specialize in legal research, contract drafting, document analysis, and providing strategic legal guidance. How can I assist you with your legal practice today?",
-      timestamp: new Date()
+      content: "Hello! I'm Flow, your AI Legal Assistant powered by advanced generative AI. I specialize in legal research, contract drafting, document analysis, and providing strategic legal guidance. I'm now connected to powerful AI models and ready to provide comprehensive assistance. How can I help you with your legal practice today?",
+      timestamp: new Date(),
+      provider: 'flow-ai',
+      model: 'legal-assistant'
     }
   ])
   const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [providerStatus, setProviderStatus] = useState<ProviderStatus | null>(null)
+  const [showProviderSettings, setShowProviderSettings] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  // Load provider status on component mount
+  useEffect(() => {
+    loadProviderStatus()
+  }, [])
+
+  const loadProviderStatus = async () => {
+    try {
+      const response = await aiApi.getProviderStatus()
+      setProviderStatus(response.data)
+    } catch (error) {
+      console.error('Failed to load provider status:', error)
+    }
+  }
+
+  const switchProvider = async (provider: 'openai' | 'deepseek' | 'mock') => {
+    try {
+      await aiApi.switchProvider(provider)
+      await loadProviderStatus()
+      toast.success(`Switched to ${provider.toUpperCase()} provider`)
+      
+      // Add system message about provider switch
+      const systemMessage: Message = {
+        id: Date.now().toString(),
+        type: 'ai',
+        content: `I've switched to the ${provider.toUpperCase()} AI provider. I'm now powered by ${provider === 'openai' ? 'OpenAI GPT models' : provider === 'deepseek' ? 'DeepSeek AI models' : 'mock responses'} and ready to assist you with enhanced capabilities!`,
+        timestamp: new Date(),
+        provider: provider,
+        model: provider === 'openai' ? 'gpt-4o' : provider === 'deepseek' ? 'deepseek-chat' : 'mock'
+      }
+      setMessages(prev => [...prev, systemMessage])
+    } catch (error) {
+      toast.error('Failed to switch provider')
+      console.error('Provider switch error:', error)
+    }
+  }
 
   // Quick action templates
   const quickActions = [
@@ -83,19 +140,49 @@ export function AIChatPage() {
     setInputValue('')
     setIsLoading(true)
 
+    // Add typing indicator
+    const typingMessage: Message = {
+      id: 'typing',
+      type: 'ai',
+      content: 'Flow is thinking...',
+      timestamp: new Date(),
+      isTyping: true
+    }
+    setMessages(prev => [...prev, typingMessage])
+
     try {
-      const response = await aiApi.chat(userMessage.content)
+      // Prepare conversation history (last 10 messages)
+      const conversationHistory = messages.slice(-10).map(msg => ({
+        role: msg.type === 'user' ? 'user' : 'assistant',
+        content: msg.content
+      }))
+
+      const response = await aiApi.chat(userMessage.content, undefined, conversationHistory)
+      
+      // Remove typing indicator
+      setMessages(prev => prev.filter(msg => msg.id !== 'typing'))
       
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: 'ai',
         content: response.data.message,
-        timestamp: new Date()
+        timestamp: new Date(),
+        provider: response.data.provider,
+        model: response.data.model,
+        usage: response.data.usage
       }
 
       setMessages(prev => [...prev, aiMessage])
+      
+      // Show success toast with provider info
+      if (response.data.provider !== 'mock') {
+        toast.success(`Response from ${response.data.provider?.toUpperCase()} AI`)
+      }
     } catch (error) {
       console.error('AI chat error:', error)
+      
+      // Remove typing indicator
+      setMessages(prev => prev.filter(msg => msg.id !== 'typing'))
       
       // Enhanced fallback responses based on message content
       let fallbackResponse = "I'm Flow, and I'm currently operating in offline mode. However, I can still provide helpful legal guidance based on my training.";
@@ -103,23 +190,102 @@ export function AIChatPage() {
       const userInput = userMessage.content.toLowerCase();
       
       if (userInput.includes('contract') || userInput.includes('agreement')) {
-        fallbackResponse = "I'm Flow, your AI Legal Assistant. While I'm currently offline, I can offer some general guidance on contracts:\n\n📋 **Key Contract Elements to Review:**\n• Parties and their obligations\n• Payment terms and deadlines\n• Termination clauses\n• Liability and indemnification\n• Dispute resolution mechanisms\n• Governing law provisions\n\n⚠️ **Common Red Flags:**\n• Unlimited liability exposure\n• Vague performance standards\n• Automatic renewal without notice\n• One-sided termination rights\n\nFor detailed contract analysis, please try again when my full capabilities are available.";
+        fallbackResponse = `I'm Flow, your AI Legal Assistant. While I'm experiencing connectivity issues, I can offer some general guidance on contracts:
+
+📋 **Key Contract Elements to Review:**
+• Parties and their obligations
+• Payment terms and deadlines  
+• Termination clauses
+• Liability and indemnification
+• Dispute resolution mechanisms
+• Governing law provisions
+
+⚠️ **Common Red Flags:**
+• Unlimited liability exposure
+• Vague performance standards
+• Automatic renewal without notice
+• One-sided termination rights
+
+💡 **Recommendation:** For detailed contract analysis, please try again in a moment when my full AI capabilities are restored.`;
       } else if (userInput.includes('research') || userInput.includes('case law')) {
-        fallbackResponse = "I'm Flow, your AI Legal Research Assistant. In offline mode, here's general guidance for legal research:\n\n🔍 **Research Strategy:**\n• Start with primary sources (statutes, cases)\n• Use secondary sources for context\n• Check for recent updates and amendments\n• Consider jurisdictional differences\n\n📚 **Key Databases:**\n• Westlaw, Lexis, Bloomberg Law\n• Google Scholar for free access\n• Court websites for recent decisions\n• Bar association resources\n\n⏰ **Research Tips:**\n• Use Boolean search operators\n• Check citation validity\n• Review headnotes and summaries\n• Note circuit splits or conflicts\n\nI'll provide more specific research assistance when fully online.";
+        fallbackResponse = `I'm Flow, your AI Legal Research Assistant. Here's general guidance for legal research:
+
+🔍 **Research Strategy:**
+• Start with primary sources (statutes, cases)
+• Use secondary sources for context
+• Check for recent updates and amendments
+• Consider jurisdictional differences
+
+📚 **Key Databases:**
+• Westlaw, Lexis, Bloomberg Law
+• Google Scholar for free access
+• Court websites for recent decisions
+• Bar association resources
+
+⏰ **Research Tips:**
+• Use Boolean search operators
+• Check citation validity
+• Review headnotes and summaries
+• Note circuit splits or conflicts
+
+🤖 **Note:** I'll provide more specific research assistance when my full AI capabilities are restored.`;
       } else if (userInput.includes('draft') || userInput.includes('document')) {
-        fallbackResponse = "I'm Flow, your AI Document Drafting Assistant. While offline, here are general drafting principles:\n\n✍️ **Professional Drafting Guidelines:**\n• Use clear, unambiguous language\n• Define all technical terms\n• Organize content logically\n• Include necessary disclaimers\n\n📝 **Common Document Types:**\n• Non-disclosure agreements\n• Service agreements\n• Employment contracts\n• Privacy policies\n• Terms of service\n\n🎯 **Best Practices:**\n• Tailor to specific jurisdiction\n• Include dispute resolution clauses\n• Specify governing law\n• Regular review and updates\n\nFor custom document generation, please reconnect when I'm fully operational.";
+        fallbackResponse = `I'm Flow, your AI Document Drafting Assistant. Here are general drafting principles:
+
+✍️ **Professional Drafting Guidelines:**
+• Use clear, unambiguous language
+• Define all technical terms
+• Organize content logically
+• Include necessary disclaimers
+
+📝 **Common Document Types:**
+• Non-disclosure agreements
+• Service agreements
+• Employment contracts
+• Privacy policies
+• Terms of service
+
+🎯 **Best Practices:**
+• Tailor to specific jurisdiction
+• Include dispute resolution clauses
+• Specify governing law
+• Regular review and updates
+
+🤖 **For Custom Document Generation:** Please try again when my AI capabilities are fully operational.`;
       } else if (userInput.includes('litigation') || userInput.includes('dispute')) {
-        fallbackResponse = "I'm Flow, your AI Litigation Assistant. Here's general dispute resolution guidance:\n\n⚖️ **Litigation Strategy Basics:**\n• Assess strength of claims/defenses\n• Evaluate potential damages\n• Consider alternative dispute resolution\n• Analyze cost-benefit of proceeding\n\n📋 **Pre-Litigation Checklist:**\n• Preserve all relevant documents\n• Interview key witnesses\n• Research applicable law\n• Calculate damages accurately\n\n🤝 **Settlement Considerations:**\n• Costs of continued litigation\n• Probability of success\n• Collectibility of judgment\n• Business relationship preservation\n\nFor case-specific analysis, please try again when my full capabilities return.";
+        fallbackResponse = `I'm Flow, your AI Litigation Assistant. Here's general dispute resolution guidance:
+
+⚖️ **Litigation Strategy Basics:**
+• Assess strength of claims/defenses
+• Evaluate potential damages
+• Consider alternative dispute resolution
+• Analyze cost-benefit of proceeding
+
+📋 **Pre-Litigation Checklist:**
+• Preserve all relevant documents
+• Interview key witnesses
+• Research applicable law
+• Calculate damages accurately
+
+🤝 **Settlement Considerations:**
+• Costs of continued litigation
+• Probability of success
+• Collectibility of judgment
+• Business relationship preservation
+
+🤖 **For Case-Specific Analysis:** Please reconnect when my full AI capabilities are available.`;
       }
       
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: 'ai',
         content: fallbackResponse,
-        timestamp: new Date()
+        timestamp: new Date(),
+        provider: 'offline-mode'
       }
       
       setMessages(prev => [...prev, aiMessage])
+      toast.error('AI temporarily unavailable - using offline guidance')
     } finally {
       setIsLoading(false)
     }
@@ -170,15 +336,26 @@ export function AIChatPage() {
               </p>
             </div>
           </div>
-          <motion.button
-            onClick={clearChat}
-            className="flex items-center space-x-2 px-4 py-2 bg-white/80 backdrop-blur-sm border border-teal-200 rounded-xl text-teal-700 font-semibold hover:bg-teal-50 transition-all duration-200"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <RefreshCw className="h-4 w-4" />
-            <span>Clear Chat</span>
-          </motion.button>
+          <div className="flex items-center space-x-3">
+            <motion.button
+              onClick={() => setShowProviderSettings(!showProviderSettings)}
+              className="flex items-center space-x-2 px-4 py-2 bg-white/80 backdrop-blur-sm border border-teal-200 rounded-xl text-teal-700 font-semibold hover:bg-teal-50 transition-all duration-200"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Settings className="h-4 w-4" />
+              <span>AI Settings</span>
+            </motion.button>
+            <motion.button
+              onClick={clearChat}
+              className="flex items-center space-x-2 px-4 py-2 bg-white/80 backdrop-blur-sm border border-teal-200 rounded-xl text-teal-700 font-semibold hover:bg-teal-50 transition-all duration-200"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <RefreshCw className="h-4 w-4" />
+              <span>Clear Chat</span>
+            </motion.button>
+          </div>
         </motion.div>
 
         {/* Quick Actions */}
@@ -206,6 +383,79 @@ export function AIChatPage() {
             ))}
           </div>
         </motion.div>
+
+        {/* AI Provider Settings Panel */}
+        <AnimatePresence>
+          {showProviderSettings && providerStatus && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mb-8"
+            >
+              <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-teal-200/50 p-6 shadow-lg">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-teal-800 flex items-center space-x-2">
+                    <Brain className="h-5 w-5" />
+                    <span>AI Provider Settings</span>
+                  </h3>
+                  <div className="flex items-center space-x-2">
+                    <div className={`w-3 h-3 rounded-full ${providerStatus.currentProvider !== 'mock' ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+                    <span className="text-sm font-medium text-teal-600">
+                      {providerStatus.currentProvider.toUpperCase()} Active
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-3 gap-4">
+                  {Object.entries(providerStatus.available).map(([provider, available]) => (
+                    <motion.button
+                      key={provider}
+                      onClick={() => available && switchProvider(provider as any)}
+                      disabled={!available || providerStatus.currentProvider === provider}
+                      className={`p-4 rounded-xl border transition-all duration-200 ${
+                        providerStatus.currentProvider === provider
+                          ? 'bg-teal-100 border-teal-300 text-teal-800'
+                          : available
+                          ? 'bg-white border-gray-200 text-gray-700 hover:border-teal-300 hover:bg-teal-50'
+                          : 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed'
+                      }`}
+                      whileHover={available ? { scale: 1.02 } : {}}
+                      whileTap={available ? { scale: 0.98 } : {}}
+                    >
+                      <div className="flex flex-col items-center space-y-2">
+                        <div className="flex items-center space-x-2">
+                          {provider === 'openai' && <Zap className="h-5 w-5" />}
+                          {provider === 'deepseek' && <Brain className="h-5 w-5" />}
+                          {provider === 'mock' && <Settings className="h-5 w-5" />}
+                          <span className="font-medium capitalize">{provider}</span>
+                        </div>
+                        <div className="text-xs text-center">
+                          {provider === 'openai' && 'GPT-4o Model'}
+                          {provider === 'deepseek' && 'DeepSeek Chat'}
+                          {provider === 'mock' && 'Demo Mode'}
+                        </div>
+                        <div className={`w-2 h-2 rounded-full ${available ? 'bg-green-400' : 'bg-red-400'}`}></div>
+                      </div>
+                    </motion.button>
+                  ))}
+                </div>
+                
+                <div className="mt-4 p-3 bg-teal-50 rounded-lg">
+                  <p className="text-sm text-teal-700">
+                    <strong>Current Model:</strong> {
+                      providerStatus.currentProvider === 'openai' 
+                        ? providerStatus.models.openai 
+                        : providerStatus.currentProvider === 'deepseek'
+                        ? providerStatus.models.deepseek
+                        : 'Demo Mode'
+                    }
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Chat Container */}

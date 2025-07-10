@@ -13,6 +13,7 @@ import { RisksModule } from './modules/risks/risks.module';
 import { DisputesModule } from './modules/disputes/disputes.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { EntitiesModule } from './modules/entities/entities.module';
 import { DatabaseModule } from './database/database.module';
 
 @Module({
@@ -37,6 +38,7 @@ import { DatabaseModule } from './database/database.module';
     DisputesModule,
     AnalyticsModule,
     NotificationsModule,
+    EntitiesModule,
   ],
 })
 export class AppModule {}

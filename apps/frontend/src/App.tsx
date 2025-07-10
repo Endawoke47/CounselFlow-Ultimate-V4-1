@@ -3,7 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './contexts/AuthContext'
 import { LoginPage } from './pages/LoginPage'
 import { DashboardLayout } from './components/layout/DashboardLayout'
-import Dashboard from './pages/DashboardNew'
+import Dashboard from './pages/Dashboard'
 import { MattersPage } from './pages/MattersPage'
 import { ContractsPage } from './pages/ContractsPage'
 import { ClientsPage } from './pages/ClientsPage'
@@ -11,14 +11,15 @@ import { AIChatPage } from './pages/AIChatPage'
 import { DocumentsPage } from './pages/DocumentsPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { ComponentShowcase } from './pages/ComponentShowcase'
-import { IPManagementPage } from './pages/IPManagementPage'
 import { CompliancePage } from './pages/CompliancePage'
-import { PrivacyPage } from './pages/PrivacyPage'
+import { RiskManagementPage } from './pages/RiskManagementPage'
 import { DisputesPage } from './pages/DisputesPage'
-import { SpendAnalyticsPage } from './pages/SpendAnalyticsPageNew'
-import { IntakePage } from './pages/IntakePageNew'
 import { EntityManagementPage } from './pages/EntityManagementPage'
-import { KnowledgeManagementPage } from './pages/KnowledgeManagementPageNew'
+import { KnowledgeManagementPage } from './pages/KnowledgeManagementPage'
+import { PolicyManagementPage } from './pages/PolicyManagementPage'
+import { LicensingRegulatoryPage } from './pages/LicensingRegulatoryPage'
+import { OutsourcingLegalSpendPage } from './pages/OutsourcingLegalSpendPage'
+import { TaskManagementPage } from './pages/TaskManagementPage'
 import { LoadingSpinner } from './components/ui/LoadingSpinner'
 
 export function App() {
@@ -46,21 +47,28 @@ export function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/matters" element={<MattersPage />} />
-        <Route path="/contracts" element={<ContractsPage />} />
-        <Route path="/clients" element={<ClientsPage />} />
-        <Route path="/ai" element={<AIChatPage />} />
-        <Route path="/documents" element={<DocumentsPage />} />
-        <Route path="/ip-management" element={<IPManagementPage />} />
-        <Route path="/compliance" element={<CompliancePage />} />
-        <Route path="/privacy" element={<PrivacyPage />} />
-        <Route path="/disputes" element={<DisputesPage />} />
-        <Route path="/spend-analytics" element={<SpendAnalyticsPage />} />
-        <Route path="/intake" element={<IntakePage />} />
+        
+        {/* 10 Core Legal Management Modules */}
         <Route path="/entity-management" element={<EntityManagementPage />} />
+        <Route path="/contracts" element={<ContractsPage />} />
+        <Route path="/disputes" element={<DisputesPage />} />
+        <Route path="/matters" element={<MattersPage />} />
+        <Route path="/risk-management" element={<RiskManagementPage />} />
+        <Route path="/policy-management" element={<PolicyManagementPage />} />
         <Route path="/knowledge" element={<KnowledgeManagementPage />} />
+        <Route path="/licensing-regulatory" element={<LicensingRegulatoryPage />} />
+        <Route path="/outsourcing-spend" element={<OutsourcingLegalSpendPage />} />
+        <Route path="/task-management" element={<TaskManagementPage />} />
+        
+        {/* Supporting Modules */}
+        <Route path="/clients" element={<ClientsPage />} />
+        <Route path="/documents" element={<DocumentsPage />} />
+        <Route path="/ai" element={<AIChatPage />} />
+        <Route path="/compliance" element={<CompliancePage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/showcase" element={<ComponentShowcase />} />
+        
+        {/* Redirects and fallbacks */}
         <Route path="/login" element={<Navigate to="/dashboard" replace />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>

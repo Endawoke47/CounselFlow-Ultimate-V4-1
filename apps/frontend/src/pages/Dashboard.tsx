@@ -1,627 +1,824 @@
-import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { 
-  Briefcase, 
-  FileText, 
-  Users, 
-  DollarSign, 
-  TrendingUp, 
-  Calendar, 
-  Clock,
-  AlertCircle,
-  ChevronRight,
-  MessageSquare,
-  BarChart3,
-  Shield,
-  Building,
-  Archive,
-  Inbox,
-  Gavel,
-  Database,
-  Scale
-} from 'lucide-react'
-import { useAuth } from '../contexts/AuthContext'
-import { motion } from 'framer-motion'
-import { mattersApi, contractsApi, usersApi } from '../services/api'
-import { LoadingSpinner } from '../components/ui/LoadingSpinner'
-import { Chart } from '../components/ui/Chart'
-import { StatusBadge, PriorityBadge } from '../components/ui/Badge'
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Card, Button, Badge } from '../components/ui/UIComponents';
+import { Chart } from '../components/ui/Chart';
 
-export function Dashboard() {
-  const { user } = useAuth()
-  const [loading, setLoading] = useState(true)
-  const [stats, setStats] = useState<any[]>([])
-  const [recentMatters, setRecentMatters] = useState<any[]>([])
-  const [upcomingDeadlines, setUpcomingDeadlines] = useState<any[]>([])
-  const [chartData, setChartData] = useState<any>({
-    mattersByMonth: [],
-    mattersByType: [],
-    revenueByMonth: []
-  })
-  const [error, setError] = useState<string | null>(null)
+interface KPICardProps {
+  title: string;
+  value: string;
+  change: string;
+  trend: 'up' | 'down' | 'stable';
+  icon: string;
+}
 
-  useEffect(() => {
-    loadDashboardData()
-  }, [])
-
-  const loadDashboardData = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-
-      // Try to fetch from API, but fallback to mock data if it fails
-      const [mattersResponse, contractsResponse, usersResponse] = await Promise.allSettled([
-        mattersApi.getAll(),
-        contractsApi.getAll(),
-        usersApi.getAll()
-      ])
-
-      // Check if API calls failed, use mock data instead
-      let matters = []
-      let contracts = []
-      let users = []
-
-      if (mattersResponse.status === 'fulfilled') {
-        matters = mattersResponse.value.data
-      } else {
-        // Mock data for matters
-        matters = [
-          {
-            id: '1',
-            title: 'Corporate Merger - TechCorp Acquisition',
-            clientName: 'TechCorp Industries',
-            status: 'active',
-            priority: 'high',
-            estimatedValue: 2500000,
-            dueDate: '2025-08-15',
-            description: 'Major corporate acquisition requiring due diligence and regulatory approval'
-          },
-          {
-            id: '2',
-            title: 'Employment Contract Dispute',
-            clientName: 'StartupCo LLC',
-            status: 'active',
-            priority: 'medium',
-            estimatedValue: 150000,
-            dueDate: '2025-07-30',
-            description: 'Non-compete clause enforcement and severance negotiations'
-          },
-          {
-            id: '3',
-            title: 'Intellectual Property Registration',
-            clientName: 'InnovaTech Solutions',
-            status: 'pending',
-            priority: 'medium',
-            estimatedValue: 75000,
-            dueDate: '2025-09-01',
-            description: 'Patent filing and trademark registration for new software platform'
-          },
-          {
-            id: '4',
-            title: 'Real Estate Transaction',
-            clientName: 'Metro Properties Group',
-            status: 'active',
-            priority: 'high',
-            estimatedValue: 500000,
-            dueDate: '2025-07-20',
-            description: 'Commercial property acquisition and lease negotiations'
-          },
-          {
-            id: '5',
-            title: 'Regulatory Compliance Review',
-            clientName: 'FinanceFirst Bank',
-            status: 'pending',
-            priority: 'low',
-            estimatedValue: 100000,
-            dueDate: '2025-10-15',
-            description: 'Annual compliance audit and policy updates'
-          }
-        ]
-      }
-
-      if (contractsResponse.status === 'fulfilled') {
-        contracts = contractsResponse.value.data
-      } else {
-        // Mock data for contracts
-        contracts = [
-          {
-            id: '1',
-            title: 'Software License Agreement',
-            type: 'licensing',
-            status: 'draft',
-            priority: 'high',
-            value: 250000,
-            effectiveDate: '2025-08-01',
-            expirationDate: '2026-08-01'
-          },
-          {
-            id: '2',
-            title: 'Service Provider Agreement',
-            type: 'service',
-            status: 'review',
-            priority: 'medium',
-            value: 180000,
-            effectiveDate: '2025-07-15',
-            expirationDate: '2025-12-31'
-          },
-          {
-            id: '3',
-            title: 'Non-Disclosure Agreement',
-            type: 'nda',
-            status: 'executed',
-            priority: 'low',
-            value: 0,
-            effectiveDate: '2025-06-01',
-            expirationDate: '2027-06-01'
-          }
-        ]
-      }
-
-      if (usersResponse.status === 'fulfilled') {
-        users = usersResponse.value.data
-      } else {
-        // Mock data for users
-        users = [
-          { id: '1', firstName: 'John', lastName: 'Smith', role: 'partner' },
-          { id: '2', firstName: 'Sarah', lastName: 'Johnson', role: 'associate' },
-          { id: '3', firstName: 'Michael', lastName: 'Brown', role: 'paralegal' }
-        ]
-      }
-
-      // Process recent matters
-      setRecentMatters(matters.slice(0, 3).map((matter: any) => ({
-        id: matter.id,
-        title: matter.title,
-        client: matter.clientName,
-        status: matter.status,
-        priority: matter.priority,
-        dueDate: matter.dueDate ? new Date(matter.dueDate).toLocaleDateString() : 'No due date',
-        value: matter.estimatedValue ? `$${matter.estimatedValue.toLocaleString()}` : 'TBD'
-      })))
-
-      // Calculate stats
-      const activeMatters = matters.filter((m: any) => m.status === 'active').length
-      const pendingContracts = contracts.filter((c: any) => c.status === 'review' || c.status === 'draft').length
-      const totalClients = new Set(matters.map((m: any) => m.clientName)).size
-      const totalRevenue = matters.reduce((sum: number, m: any) => sum + (m.estimatedValue || 0), 0)
-
-      setStats([
-        {
-          name: 'Active Matters',
-          value: activeMatters.toString(),
-          change: '+12%',
-          changeType: 'positive' as const,
-          icon: Briefcase,
-          color: 'bg-teal-500'
-        },
-        {
-          name: 'Pending Contracts',
-          value: pendingContracts.toString(),
-          change: '+4%',
-          changeType: 'positive' as const,
-          icon: FileText,
-          color: 'bg-blue-500'
-        },
-        {
-          name: 'Total Clients',
-          value: totalClients.toString(),
-          change: '+8%',
-          changeType: 'positive' as const,
-          icon: Users,
-          color: 'bg-purple-500'
-        },
-        {
-          name: 'Revenue (YTD)',
-          value: `$${(totalRevenue / 1000000).toFixed(1)}M`,
-          change: '+15%',
-          changeType: 'positive' as const,
-          icon: DollarSign,
-          color: 'bg-green-500'
-        }
-      ])
-
-      // Generate upcoming deadlines from matters with due dates
-      let deadlines = matters
-        .filter((m: any) => m.dueDate && new Date(m.dueDate) > new Date())
-        .sort((a: any, b: any) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
-        .slice(0, 3)
-        .map((matter: any, index: number) => ({
-          id: matter.id,
-          title: matter.title,
-          client: matter.clientName,
-          date: new Date(matter.dueDate).toLocaleDateString(),
-          time: '9:00 AM', // Default time for demo
-          type: matter.type || 'meeting'
-        }))
-
-      // If no deadlines from API, add mock deadlines
-      if (deadlines.length === 0) {
-        deadlines = [
-          {
-            id: 'deadline-1',
-            title: 'Contract Review Meeting',
-            client: 'TechCorp Industries',
-            date: new Date(Date.now() + 86400000).toLocaleDateString(), // Tomorrow
-            time: '10:00 AM',
-            type: 'meeting'
-          },
-          {
-            id: 'deadline-2',
-            title: 'Due Diligence Report',
-            client: 'StartupCo LLC',
-            date: new Date(Date.now() + 172800000).toLocaleDateString(), // Day after tomorrow
-            time: '2:00 PM',
-            type: 'document'
-          },
-          {
-            id: 'deadline-3',
-            title: 'Court Filing Deadline',
-            client: 'Metro Properties Group',
-            date: new Date(Date.now() + 259200000).toLocaleDateString(), // 3 days from now
-            time: '5:00 PM',
-            type: 'filing'
-          }
-        ]
-      }
-
-      setUpcomingDeadlines(deadlines)
-
-      // Generate chart data
-      const mattersByMonth = [
-        { name: 'Jan', value: 12 },
-        { name: 'Feb', value: 19 },
-        { name: 'Mar', value: 15 },
-        { name: 'Apr', value: 22 },
-        { name: 'May', value: 18 },
-        { name: 'Jun', value: 25 },
-        { name: 'Jul', value: activeMatters }
-      ]
-
-      const mattersByType = [
-        { name: 'Corporate', value: Math.floor(matters.length * 0.4) || 8 },
-        { name: 'Litigation', value: Math.floor(matters.length * 0.3) || 6 },
-        { name: 'Real Estate', value: Math.floor(matters.length * 0.2) || 4 },
-        { name: 'Employment', value: Math.floor(matters.length * 0.1) || 2 }
-      ]
-
-      const revenueByMonth = [
-        { name: 'Jan', value: 150000 },
-        { name: 'Feb', value: 180000 },
-        { name: 'Mar', value: 165000 },
-        { name: 'Apr', value: 220000 },
-        { name: 'May', value: 195000 },
-        { name: 'Jun', value: 240000 },
-        { name: 'Jul', value: totalRevenue || 200000 }
-      ]
-
-      setChartData({
-        mattersByMonth,
-        mattersByType,
-        revenueByMonth
-      })
-
-    } catch (err: any) {
-      console.error('Error loading dashboard data:', err)
-      setError('Failed to load dashboard data. Please try again.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const aiInsights = [
-    {
-      id: 1,
-      type: 'risk',
-      title: 'High Value Matters Require Attention',
-      description: `${recentMatters.filter(m => m.priority === 'high').length} high-priority matters need immediate focus`,
-      action: 'Review matters'
-    },
-    {
-      id: 2,
-      type: 'opportunity',
-      title: 'Client Expansion Opportunity',
-      description: 'Multiple active matters suggest potential for expanded services',
-      action: 'Schedule meeting'
-    },
-    {
-      id: 3,
-      type: 'deadline',
-      title: 'Approaching Deadlines',
-      description: `${upcomingDeadlines.length} matters have deadlines within the next 30 days`,
-      action: 'Review schedule'
-    }
-  ]
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner size="lg" />
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Error Loading Dashboard</h2>
-          <p className="text-gray-600 mb-4">{error}</p>
-          <button
-            onClick={loadDashboardData}
-            className="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700"
-          >
-            Try Again
-          </button>
+const KPICard: React.FC<KPICardProps> = ({ title, value, change, trend, icon }) => {
+  const trendColor = trend === 'up' ? 'text-success' : trend === 'down' ? 'text-danger' : 'text-muted-gray';
+  const trendIcon = trend === 'up' ? '↗' : trend === 'down' ? '↘' : '→';
+  
+  return (
+    <Card hover className="group">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-muted-gray">{title}</p>
+          <p className="text-2xl font-bold text-dark-navy mt-1">{value}</p>
+          <p className={`text-sm mt-1 ${trendColor} flex items-center`}>
+            <span className="mr-1">{trendIcon}</span>
+            {change}
+          </p>
+        </div>
+        <div className="text-3xl opacity-60 group-hover:opacity-80 transition-opacity">
+          {icon}
         </div>
       </div>
-    )
-  }
+    </Card>
+  );
+};
+
+const QuickAccessCard: React.FC<{ title: string; description: string; icon: string; path: string; color: string }> = 
+({ title, description, icon, path, color }) => (
+  <Link to={path}>
+    <Card hover className="group h-full">
+      <div className="flex items-start space-x-4">
+        <div className={`w-12 h-12 ${color} rounded-xl flex items-center justify-center text-white text-xl group-hover:scale-110 transition-transform`}>
+          {icon}
+        </div>
+        <div>
+          <h3 className="font-semibold text-dark-navy group-hover:text-primary transition-colors">{title}</h3>
+          <p className="text-sm text-muted-gray mt-1">{description}</p>
+        </div>
+      </div>
+    </Card>
+  </Link>
+);
+
+const Dashboard: React.FC = () => {
+  const [selectedPeriod, setSelectedPeriod] = useState('7d');
+  const [isLoading, setIsLoading] = useState(false);
+  const [showAIInsights, setShowAIInsights] = useState(false);
+  const [aiInsightsLoading, setAiInsightsLoading] = useState(false);
+
+  const handlePeriodChange = (period: string) => {
+    if (period === selectedPeriod) return;
+    
+    setIsLoading(true);
+    // Simulate data loading
+    setTimeout(() => {
+      setSelectedPeriod(period);
+      setIsLoading(false);
+    }, 300);
+  };
+
+  const handleAIInsightsClick = () => {
+    setAiInsightsLoading(true);
+    setShowAIInsights(true);
+    
+    // Simulate AI processing time
+    setTimeout(() => {
+      setAiInsightsLoading(false);
+    }, 2000);
+  };
+
+  // Dynamic data based on selected period
+  const getDataForPeriod = (period: string) => {
+    const dataMapping = {
+      '7d': {
+        kpiData: [
+          {
+            title: 'Active Matters',
+            value: '32',
+            change: '+8% from last week',
+            trend: 'up' as const,
+            icon: '📁'
+          },
+          {
+            title: 'Revenue (7d)',
+            value: '$240K',
+            change: '+15% from last week',
+            trend: 'up' as const,
+            icon: '💰'
+          },
+          {
+            title: 'Pending Reviews',
+            value: '12',
+            change: '-3% from last week',
+            trend: 'down' as const,
+            icon: '⏳'
+          },
+          {
+            title: 'Client Satisfaction',
+            value: '96%',
+            change: '+2% from last week',
+            trend: 'up' as const,
+            icon: '⭐'
+          }
+        ],
+        chartData: [
+          { name: 'Mon', revenue: 32000, matters: 3 },
+          { name: 'Tue', revenue: 45000, matters: 5 },
+          { name: 'Wed', revenue: 38000, matters: 4 },
+          { name: 'Thu', revenue: 42000, matters: 6 },
+          { name: 'Fri', revenue: 48000, matters: 7 },
+          { name: 'Sat', revenue: 35000, matters: 4 },
+          { name: 'Sun', revenue: 50000, matters: 8 }
+        ],
+        successRate: 89,
+        period: 'week'
+      },
+      '30d': {
+        kpiData: [
+          {
+            title: 'Active Matters',
+            value: '127',
+            change: '+12% from last month',
+            trend: 'up' as const,
+            icon: '📁'
+          },
+          {
+            title: 'Revenue (30d)',
+            value: '$1.2M',
+            change: '+18% from last month',
+            trend: 'up' as const,
+            icon: '💰'
+          },
+          {
+            title: 'Pending Reviews',
+            value: '23',
+            change: '-8% from last month',
+            trend: 'down' as const,
+            icon: '⏳'
+          },
+          {
+            title: 'Client Satisfaction',
+            value: '94%',
+            change: 'No change',
+            trend: 'stable' as const,
+            icon: '⭐'
+          }
+        ],
+        chartData: [
+          { name: 'Week 1', revenue: 280000, matters: 18 },
+          { name: 'Week 2', revenue: 320000, matters: 22 },
+          { name: 'Week 3', revenue: 300000, matters: 20 },
+          { name: 'Week 4', revenue: 350000, matters: 28 }
+        ],
+        successRate: 87,
+        period: 'month'
+      },
+      '90d': {
+        kpiData: [
+          {
+            title: 'Active Matters',
+            value: '348',
+            change: '+25% from last quarter',
+            trend: 'up' as const,
+            icon: '📁'
+          },
+          {
+            title: 'Revenue (90d)',
+            value: '$4.2M',
+            change: '+22% from last quarter',
+            trend: 'up' as const,
+            icon: '💰'
+          },
+          {
+            title: 'Pending Reviews',
+            value: '67',
+            change: '-12% from last quarter',
+            trend: 'down' as const,
+            icon: '⏳'
+          },
+          {
+            title: 'Client Satisfaction',
+            value: '92%',
+            change: '+3% from last quarter',
+            trend: 'up' as const,
+            icon: '⭐'
+          }
+        ],
+        chartData: [
+          { name: 'Month 1', revenue: 1200000, matters: 85 },
+          { name: 'Month 2', revenue: 1400000, matters: 98 },
+          { name: 'Month 3', revenue: 1600000, matters: 115 }
+        ],
+        successRate: 91,
+        period: 'quarter'
+      }
+    };
+    return dataMapping[period as keyof typeof dataMapping] || dataMapping['7d'];
+  };
+
+  const currentData = getDataForPeriod(selectedPeriod);
+  const kpiData = currentData.kpiData;
+
+  const quickAccessItems = [
+    {
+      title: 'Create New Matter',
+      description: 'Start a new legal matter',
+      icon: '📁',
+      path: '/matters',
+      color: 'bg-primary'
+    },
+    {
+      title: 'Draft Contract',
+      description: 'AI-powered contract generation',
+      icon: '📄',
+      path: '/contracts',
+      color: 'bg-accent-purple'
+    },
+    {
+      title: 'Add Client',
+      description: 'Register new client',
+      icon: '👥',
+      path: '/clients',
+      color: 'bg-success'
+    },
+    {
+      title: 'Legal Research',
+      description: 'AI-assisted research',
+      icon: '🔍',
+      path: '/ai',
+      color: 'bg-info'
+    },
+    {
+      title: 'Upload Document',
+      description: 'Add to document library',
+      icon: '📋',
+      path: '/documents',
+      color: 'bg-warning'
+    },
+    {
+      title: 'Compliance Check',
+      description: 'Review compliance status',
+      icon: '🔒',
+      path: '/compliance',
+      color: 'bg-danger'
+    }
+  ];
+
+  // Dynamic recent activity based on period
+  const getRecentActivityForPeriod = (period: string) => {
+    const activities = {
+      '7d': [
+        {
+          type: 'matter',
+          title: 'Updated TechCorp Acquisition',
+          time: '2 hours ago',
+          user: 'Sarah Chen',
+          status: 'in-progress'
+        },
+        {
+          type: 'contract',
+          title: 'Reviewed SaaS Agreement',
+          time: '4 hours ago',
+          user: 'Mike Johnson',
+          status: 'completed'
+        },
+        {
+          type: 'client',
+          title: 'New client onboarded',
+          time: '1 day ago',
+          user: 'Lisa Wang',
+          status: 'completed'
+        },
+        {
+          type: 'document',
+          title: 'Patent filing submitted',
+          time: '2 days ago',
+          user: 'David Lee',
+          status: 'pending'
+        }
+      ],
+      '30d': [
+        {
+          type: 'matter',
+          title: 'Completed merger due diligence',
+          time: '3 days ago',
+          user: 'Sarah Chen',
+          status: 'completed'
+        },
+        {
+          type: 'contract',
+          title: 'Enterprise agreement signed',
+          time: '1 week ago',
+          user: 'Mike Johnson',
+          status: 'completed'
+        },
+        {
+          type: 'client',
+          title: 'Fortune 500 client acquired',
+          time: '2 weeks ago',
+          user: 'Lisa Wang',
+          status: 'completed'
+        },
+        {
+          type: 'document',
+          title: 'IP portfolio analysis completed',
+          time: '3 weeks ago',
+          user: 'David Lee',
+          status: 'completed'
+        }
+      ],
+      '90d': [
+        {
+          type: 'matter',
+          title: 'Major litigation settled',
+          time: '1 month ago',
+          user: 'Sarah Chen',
+          status: 'completed'
+        },
+        {
+          type: 'contract',
+          title: 'Multi-year partnership agreement',
+          time: '6 weeks ago',
+          user: 'Mike Johnson',
+          status: 'completed'
+        },
+        {
+          type: 'client',
+          title: 'International expansion client',
+          time: '2 months ago',
+          user: 'Lisa Wang',
+          status: 'completed'
+        },
+        {
+          type: 'document',
+          title: 'Regulatory compliance audit',
+          time: '2.5 months ago',
+          user: 'David Lee',
+          status: 'completed'
+        }
+      ]
+    };
+    return activities[period as keyof typeof activities] || activities['7d'];
+  };
+
+  const recentActivity = getRecentActivityForPeriod(selectedPeriod);
+
+  const upcomingDeadlines = [
+    {
+      title: 'TechCorp Due Diligence',
+      date: 'Tomorrow',
+      priority: 'high',
+      type: 'review'
+    },
+    {
+      title: 'Patent Application Filing',
+      date: 'Dec 15',
+      priority: 'medium',
+      type: 'filing'
+    },
+    {
+      title: 'Contract Renewal Review',
+      date: 'Dec 18',
+      priority: 'low',
+      type: 'review'
+    }
+  ];
 
   return (
     <div className="px-4 lg:px-6 bg-gradient-to-br from-teal-50 to-white min-h-screen">
-      {/* Welcome Header */}
+      {/* Loading Overlay */}
+      {isLoading && (
+        <div className="absolute inset-0 bg-white/70 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg">
+          <div className="flex items-center space-x-3 bg-white rounded-lg shadow-lg p-4">
+            <svg className="animate-spin h-5 w-5 text-teal-600" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+            </svg>
+            <span className="text-sm font-medium text-dark-navy">Updating dashboard...</span>
+          </div>
+        </div>
+      )}
+      
+      {/* Header */}
       <div className="mb-8">
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="mb-6"
-        >
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-teal-700 to-cyan-600 bg-clip-text text-transparent">
-            Welcome back, {user?.firstName}!
-          </h1>
-          <p className="text-teal-600 mt-2 text-lg font-medium">
-            Here's what's happening with your legal practice today.
-          </p>
-        </motion.div>
-      </div>
-
-      {/* Enhanced KPI Cards with teal theme */}
-      <motion.div 
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2, duration: 0.6 }}
-      >
-        {stats.map((stat, index) => {
-          const Icon = stat.icon
-          return (
-            <motion.div
-              key={stat.name}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-teal-200/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-teal-600 uppercase tracking-wide">{stat.name}</p>
-                  <p className="text-3xl font-bold text-teal-800 mt-2">{stat.value}</p>
-                </div>
-                <div className="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-xl">
-                  <Icon className="h-6 w-6 text-white" />
-                </div>
-              </div>
-              <div className="mt-2 flex items-center text-sm">
-                <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
-                <span className="text-green-600 font-medium">{stat.change}</span>
-                <span className="text-teal-500 ml-1">from last month</span>
-              </div>
-            </motion.div>
-          )
-        })}
-      </motion.div>
-
-      {/* Quick Access Modules */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="mb-8"
-      >
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-teal-700 to-cyan-600 bg-clip-text text-transparent">Quick Access</h2>
-          <p className="text-teal-600">Access all legal practice modules</p>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          {[
-            { name: 'Legal Intake', href: '/intake', icon: Inbox, color: 'from-blue-500 to-blue-600', description: 'Request routing' },
-            { name: 'IP Management', href: '/ip-management', icon: Shield, color: 'from-purple-500 to-purple-600', description: 'Patents & trademarks' },
-            { name: 'Entity Management', href: '/entity-management', icon: Building, color: 'from-indigo-500 to-indigo-600', description: 'Corporate entities' },
-            { name: 'Compliance', href: '/compliance', icon: Scale, color: 'from-green-500 to-green-600', description: 'Risk & compliance' },
-            { name: 'Privacy & Data', href: '/privacy', icon: Shield, color: 'from-cyan-500 to-cyan-600', description: 'GDPR & data protection' },
-            { name: 'Disputes', href: '/disputes', icon: Gavel, color: 'from-red-500 to-red-600', description: 'Litigation management' },
-            { name: 'Spend Analytics', href: '/spend-analytics', icon: TrendingUp, color: 'from-orange-500 to-orange-600', description: 'Financial insights' },
-            { name: 'Knowledge Base', href: '/knowledge', icon: Database, color: 'from-pink-500 to-pink-600', description: 'Legal research' },
-            { name: 'Documents', href: '/documents', icon: Archive, color: 'from-gray-500 to-gray-600', description: 'Document management' },
-            { name: 'AI Assistant', href: '/ai', icon: MessageSquare, color: 'from-teal-500 to-cyan-500', description: 'AI-powered assistance' }
-          ].map((module, index) => {
-            const Icon = module.icon
-            return (
-              <Link
-                key={module.name}
-                to={module.href}
-                className="group"
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-teal-700 to-cyan-600 bg-clip-text text-transparent">Dashboard</h1>
+            <p className="text-teal-600 mt-2 text-lg font-medium">
+              Welcome back! Here's what's happening at your firm 
+              <span className="font-semibold text-teal-700"> 
+                ({selectedPeriod === '7d' ? 'Last 7 days' : selectedPeriod === '30d' ? 'Last 30 days' : 'Last 90 days'})
+              </span>
+            </p>
+          </div>
+        <div className="flex items-center space-x-4 mt-4 lg:mt-0">
+          <div className="flex items-center space-x-2 bg-white rounded-lg border border-muted-gray p-1 shadow-sm">
+            {[
+              { key: '7d', label: '7d', desc: 'Last week' },
+              { key: '30d', label: '30d', desc: 'Last month' },
+              { key: '90d', label: '90d', desc: 'Last quarter' }
+            ].map((period) => (
+              <button
+                key={period.key}
+                onClick={() => handlePeriodChange(period.key)}
+                disabled={isLoading}
+                className={`px-3 py-1 text-sm rounded-md transition-all duration-200 disabled:opacity-50 ${
+                  selectedPeriod === period.key
+                    ? 'bg-primary text-white shadow-sm'
+                    : 'text-muted-gray hover:text-dark-navy hover:bg-light-gray'
+                }`}
+                title={period.desc}
               >
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.4 + index * 0.05 }}
-                  className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-teal-200/50 shadow-lg hover:shadow-xl transition-all duration-300 group-hover:border-teal-400 group-hover:scale-105"
-                >
-                  <div className="flex flex-col items-center text-center">
-                    <div className={`p-4 rounded-xl bg-gradient-to-br ${module.color} mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
-                      <Icon className="h-6 w-6 text-white" />
-                    </div>
-                    <h3 className="font-semibold text-teal-800 text-sm mb-2 group-hover:text-teal-600 transition-colors">
-                      {module.name}
-                    </h3>
-                    <p className="text-xs text-teal-600 leading-tight">
-                      {module.description}
-                    </p>
+                {isLoading && selectedPeriod === period.key ? (
+                  <div className="flex items-center">
+                    <svg className="animate-spin -ml-1 mr-1 h-3 w-3" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    <span className="text-xs">...</span>
                   </div>
-                </motion.div>
-              </Link>
-            )
-          })}
+                ) : (
+                  period.label
+                )}
+              </button>
+            ))}
+          </div>
+          <Button 
+            variant="ai" 
+            icon="✨" 
+            iconPosition="left"
+            onClick={handleAIInsightsClick}
+            disabled={aiInsightsLoading}
+          >
+            {aiInsightsLoading ? 'Analyzing...' : 'AI Insights'}
+          </Button>
         </div>
-      </motion.div>
+        </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Matters */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="lg:col-span-2 bg-white/90 backdrop-blur-sm rounded-2xl border border-teal-200/50 shadow-lg"
-        >
-          <div className="p-6 border-b border-teal-200/50">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xl font-bold text-teal-800">Recent Matters</h3>
-              <Link
-                to="/matters"
-                className="text-teal-600 hover:text-teal-700 text-sm font-semibold flex items-center transition-colors duration-200"
-              >
-                View all
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </Link>
-            </div>
+      <div className="space-y-8">
+        {/* KPI Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {kpiData.map((kpi, index) => (
+          <div 
+            key={`${selectedPeriod}-${index}`}
+            className="animate-fade-in"
+            style={{ animationDelay: `${index * 100}ms` }}
+          >
+            <KPICard {...kpi} />
           </div>
-          <div className="p-6">
-            <div className="space-y-4">
-              {recentMatters.map((matter) => (
-                <div key={matter.id} className="flex items-center justify-between p-4 bg-teal-50/50 rounded-xl hover:bg-teal-50 transition-colors duration-200">
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-teal-900">{matter.title}</h4>
-                    <p className="text-sm text-teal-600 mt-1">{matter.client}</p>
-                    <div className="flex items-center mt-3 space-x-4">
-                      <StatusBadge status={matter.status} />
-                      <PriorityBadge priority={matter.priority} />
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-semibold text-teal-900">{matter.value}</p>
-                    <p className="text-xs text-teal-500 mt-1">Due: {matter.dueDate}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Upcoming Deadlines */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="bg-white/90 backdrop-blur-sm rounded-2xl border border-teal-200/50 shadow-lg"
-        >
-          <div className="p-6 border-b border-teal-200/50">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xl font-bold text-teal-800">Upcoming Deadlines</h3>
-              <Calendar className="h-5 w-5 text-teal-500" />
-            </div>
-          </div>
-          <div className="p-6">
-            <div className="space-y-4">
-              {upcomingDeadlines.map((deadline) => (
-                <div key={deadline.id} className="flex items-start space-x-3 p-3 bg-teal-50/50 rounded-lg hover:bg-teal-50 transition-colors duration-200">
-                  <div className="flex-shrink-0">
-                    <div className="w-3 h-3 bg-orange-500 rounded-full mt-2"></div>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-teal-900">{deadline.title}</p>
-                    <p className="text-xs text-teal-600 mt-1">{deadline.client}</p>
-                    <div className="flex items-center mt-2 text-xs text-teal-500">
-                      <Clock className="h-3 w-3 mr-1" />
-                      {deadline.date} at {deadline.time}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </motion.div>
+        ))}
       </div>
 
       {/* Charts Section */}
-      <motion.div 
-        className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
-      >
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-teal-200/50 shadow-lg p-6">
-          <Chart
-            data={chartData.mattersByMonth}
-            type="area"
-            title="Matters by Month"
-          />
-        </div>
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-teal-200/50 shadow-lg p-6">
-          <Chart
-            data={chartData.revenueByMonth}
-            type="bar"
-            title="Revenue Trend"
-          />
-        </div>
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.7 }}
-        className="mt-6 bg-white/90 backdrop-blur-sm rounded-2xl border border-teal-200/50 shadow-lg p-6"
-      >
-        <Chart
-          data={chartData.mattersByType}
-          type="pie"
-          title="Matters by Practice Area"
-        />
-      </motion.div>
-
-      {/* AI Insights */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.8 }}
-        className="mt-6 bg-white/90 backdrop-blur-sm rounded-2xl border border-teal-200/50 shadow-lg"
-      >
-        <div className="p-6 border-b border-teal-200/50">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xl font-bold text-teal-800">AI Insights</h3>
-            <MessageSquare className="h-5 w-5 text-teal-600" />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-semibold text-dark-navy">Revenue & Matters Trend</h3>
+            <div className="flex items-center space-x-4">
+              <Badge variant="ai">AI Generated</Badge>
+              <div className="text-xs text-muted-gray capitalize">Last {currentData.period}</div>
+            </div>
           </div>
-        </div>
-        <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {aiInsights.map((insight) => (
-              <motion.div 
-                key={insight.id} 
-                className="p-4 bg-teal-50/50 rounded-xl hover:bg-teal-50 transition-colors duration-200"
-                whileHover={{ scale: 1.02 }}
-              >
-                <div className="flex items-start space-x-3">
-                  <div className="flex-shrink-0 p-2 rounded-lg bg-gradient-to-br from-teal-600 to-cyan-600">
-                    {insight.type === 'risk' && <AlertCircle className="h-4 w-4 text-white" />}
-                    {insight.type === 'opportunity' && <TrendingUp className="h-4 w-4 text-white" />}
-                    {insight.type === 'deadline' && <Clock className="h-4 w-4 text-white" />}
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="text-sm font-semibold text-teal-900">{insight.title}</h4>
-                    <p className="text-xs text-teal-600 mt-2 leading-relaxed">{insight.description}</p>
-                    <button className="text-xs text-teal-600 hover:text-teal-700 mt-3 font-semibold transition-colors duration-200">
-                      {insight.action}
-                    </button>
-                  </div>
+          <div className="mb-4 flex items-center space-x-6 text-sm">
+            <div className="flex items-center space-x-2">
+              <div className="w-3 h-3 bg-primary rounded-full"></div>
+              <span className="text-muted-gray">Revenue</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-3 h-3 bg-accent-purple rounded-full"></div>
+              <span className="text-muted-gray">New Matters</span>
+            </div>
+          </div>
+          <div className="h-80">
+            <Chart
+              type="combo"
+              data={currentData.chartData}
+            />
+          </div>
+        </Card>
+
+        <Card>
+          <h3 className="text-lg font-semibold text-dark-navy mb-6">Success Rate Gauge</h3>
+          <div className="flex items-center justify-center h-64">
+            <div className="relative">
+              <svg className="w-48 h-48 transform -rotate-90">
+                <circle
+                  cx="96"
+                  cy="96"
+                  r="80"
+                  stroke="#D0D4D9"
+                  strokeWidth="12"
+                  fill="transparent"
+                />
+                <circle
+                  cx="96"
+                  cy="96"
+                  r="80"
+                  stroke="#3C7B75"
+                  strokeWidth="12"
+                  fill="transparent"
+                  strokeDasharray={`${2 * Math.PI * 80}`}
+                  strokeDashoffset={`${2 * Math.PI * 80 * (1 - currentData.successRate / 100)}`}
+                  className="transition-all duration-1000 ease-out"
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-dark-navy">{currentData.successRate}%</div>
+                  <div className="text-sm text-muted-gray">Success Rate</div>
+                  <div className="text-xs text-muted-gray mt-1 capitalize">This {currentData.period}</div>
                 </div>
-              </motion.div>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Quick Access Grid */}
+      <div>
+        <h2 className="text-2xl font-bold text-dark-navy mb-6">Quick Access</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {quickAccessItems.map((item, index) => (
+            <QuickAccessCard key={index} {...item} />
+          ))}
+        </div>
+      </div>
+
+      {/* Recent Activity & Deadlines */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <h3 className="text-lg font-semibold text-dark-navy mb-6">Recent Activity</h3>
+          <div className="space-y-4">
+            {recentActivity.map((activity, index) => (
+              <div key={index} className="flex items-center space-x-4 p-3 rounded-lg hover:bg-light-gray transition-colors">
+                <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
+                  <span className="text-primary font-semibold text-sm">
+                    {activity.type === 'matter' ? '📁' : 
+                     activity.type === 'contract' ? '📄' :
+                     activity.type === 'client' ? '👥' : '📋'}
+                  </span>
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium text-dark-navy">{activity.title}</p>
+                  <p className="text-sm text-muted-gray">{activity.user} • {activity.time}</p>
+                </div>
+                <Badge 
+                  variant={activity.status === 'completed' ? 'success' : 
+                          activity.status === 'in-progress' ? 'primary' : 'warning'}
+                >
+                  {activity.status}
+                </Badge>
+              </div>
             ))}
           </div>
+        </Card>
+
+        <Card>
+          <h3 className="text-lg font-semibold text-dark-navy mb-6">Upcoming Deadlines</h3>
+          <div className="space-y-4">
+            {upcomingDeadlines.map((deadline, index) => (
+              <div key={index} className="flex items-center justify-between p-3 rounded-lg hover:bg-light-gray transition-colors">
+                <div>
+                  <p className="font-medium text-dark-navy">{deadline.title}</p>
+                  <p className="text-sm text-muted-gray">{deadline.date}</p>
+                </div>
+                <Badge 
+                  variant={deadline.priority === 'high' ? 'danger' : 
+                          deadline.priority === 'medium' ? 'warning' : 'info'}
+                >
+                  {deadline.priority}
+                </Badge>
+              </div>
+            ))}
+          </div>
+          <div className="mt-6">
+            <Button variant="ghost" className="w-full">
+              View All Deadlines
+            </Button>
+          </div>
+        </Card>
+      </div>
+
+      {/* AI Recommendations */}
+      <Card>
+        <div className="flex items-center space-x-3 mb-6">
+          <div className="w-8 h-8 bg-gradient-purple rounded-lg flex items-center justify-center">
+            <span className="text-white">✨</span>
+          </div>
+          <h3 className="text-lg font-semibold text-dark-navy">AI Recommendations</h3>
+          <div className="text-xs text-muted-gray capitalize">Based on {currentData.period} data</div>
         </div>
-      </motion.div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {(() => {
+            const recommendations = {
+              '7d': [
+                {
+                  title: 'Daily Productivity Boost',
+                  description: 'Your team completed 15% more tasks this week. Keep the momentum!',
+                  action: 'View Details',
+                  variant: 'primary' as const
+                },
+                {
+                  title: 'Quick Client Check-in',
+                  description: '3 clients need immediate follow-up based on recent activities',
+                  action: 'Contact Now',
+                  variant: 'secondary' as const
+                },
+                {
+                  title: 'Document Review Alert',
+                  description: '5 urgent documents need your attention before EOD',
+                  action: 'Review',
+                  variant: 'ai' as const
+                }
+              ],
+              '30d': [
+                {
+                  title: 'Contract Review Optimization',
+                  description: 'Identified 8 contracts that need review within next 7 days',
+                  action: 'Review Now',
+                  variant: 'primary' as const
+                },
+                {
+                  title: 'Client Retention Focus',
+                  description: '12 clients require follow-up based on 30-day engagement patterns',
+                  action: 'Schedule Calls',
+                  variant: 'secondary' as const
+                },
+                {
+                  title: 'Revenue Optimization',
+                  description: 'AI suggests focusing on 3 high-value client segments this month',
+                  action: 'Analyze',
+                  variant: 'ai' as const
+                }
+              ],
+              '90d': [
+                {
+                  title: 'Strategic Planning Insight',
+                  description: 'Quarterly trends show 25% growth opportunity in IP law',
+                  action: 'View Strategy',
+                  variant: 'primary' as const
+                },
+                {
+                  title: 'Long-term Client Health',
+                  description: 'Quarterly analysis reveals 8 at-risk client relationships',
+                  action: 'Create Plan',
+                  variant: 'secondary' as const
+                },
+                {
+                  title: 'Performance Analytics',
+                  description: 'AI detected patterns for 30% efficiency improvement',
+                  action: 'Deep Dive',
+                  variant: 'ai' as const
+                }
+              ]
+            };
+            
+            const currentRecommendations = recommendations[selectedPeriod as keyof typeof recommendations] || recommendations['7d'];
+            
+            return currentRecommendations.map((rec, index) => (
+              <div key={`${selectedPeriod}-rec-${index}`} className="p-4 bg-light-gray rounded-lg animate-fade-in">
+                <h4 className="font-medium text-dark-navy mb-2">{rec.title}</h4>
+                <p className="text-sm text-muted-gray mb-3">{rec.description}</p>
+                <Button size="sm" variant={rec.variant}>{rec.action}</Button>
+              </div>
+            ));
+          })()}
+        </div>
+      </Card>
+
+      {/* AI Insights Modal */}
+      {showAIInsights && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-gradient-to-r from-purple-600 to-purple-700 text-white p-6 rounded-t-xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                    <span className="text-xl">🧠</span>
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold">AI Legal Insights</h2>
+                    <p className="text-purple-100">Powered by CounselFlow AI Engine</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowAIInsights(false)}
+                  className="w-8 h-8 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg flex items-center justify-center transition-colors"
+                >
+                  <span className="text-xl">×</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6">
+              {aiInsightsLoading ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <div className="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mb-4"></div>
+                  <p className="text-lg font-medium text-gray-700">Analyzing your legal data...</p>
+                  <p className="text-sm text-gray-500 mt-2">This may take a few moments</p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Risk Analysis */}
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div className="flex items-center space-x-2 mb-3">
+                      <span className="text-xl">⚠️</span>
+                      <h3 className="text-lg font-semibold text-red-800">Risk Analysis</h3>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-red-700">Contract Renewal Risk (TechCorp)</span>
+                        <span className="px-2 py-1 bg-red-100 text-red-800 rounded text-sm font-medium">HIGH</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-red-700">Compliance Gap (Privacy Policy)</span>
+                        <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-sm font-medium">MEDIUM</span>
+                      </div>
+                      <p className="text-sm text-red-600 mt-2">
+                        💡 <strong>Recommendation:</strong> Schedule client meeting within 7 days to discuss renewal terms.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Opportunities */}
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div className="flex items-center space-x-2 mb-3">
+                      <span className="text-xl">🚀</span>
+                      <h3 className="text-lg font-semibold text-green-800">Growth Opportunities</h3>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-green-700">Cross-sell IP Services to 3 clients</span>
+                        <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-sm font-medium">$45K potential</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-green-700">Upsell Corporate Advisory</span>
+                        <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-sm font-medium">$28K potential</span>
+                      </div>
+                      <p className="text-sm text-green-600 mt-2">
+                        💡 <strong>Insight:</strong> Clients in fintech sector show 85% acceptance rate for IP services.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Efficiency Analysis */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="flex items-center space-x-2 mb-3">
+                      <span className="text-xl">⚡</span>
+                      <h3 className="text-lg font-semibold text-blue-800">Efficiency Insights</h3>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-blue-700">Document Review Automation</span>
+                        <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm font-medium">30% time save</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-blue-700">Template Usage Optimization</span>
+                        <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm font-medium">12 hrs/week</span>
+                      </div>
+                      <p className="text-sm text-blue-600 mt-2">
+                        💡 <strong>Suggestion:</strong> Implement AI contract review for routine NDAs and service agreements.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Market Intelligence */}
+                  <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                    <div className="flex items-center space-x-2 mb-3">
+                      <span className="text-xl">📊</span>
+                      <h3 className="text-lg font-semibold text-purple-800">Market Intelligence</h3>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="text-purple-700">
+                        <p><strong>Industry Trend:</strong> M&A activity in your practice areas up 23% this quarter</p>
+                      </div>
+                      <div className="text-purple-700">
+                        <p><strong>Competitive Intel:</strong> 3 competitors raised rates by 8-12% recently</p>
+                      </div>
+                      <div className="text-purple-700">
+                        <p><strong>Regulatory Update:</strong> New data privacy laws affect 67% of your client base</p>
+                      </div>
+                      <p className="text-sm text-purple-600 mt-2">
+                        💡 <strong>Action Item:</strong> Consider rate adjustment and proactive client advisory on regulatory changes.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex space-x-4 pt-4 border-t border-gray-200">
+                    <Button variant="ai" onClick={() => alert('Detailed report feature coming soon!')}>
+                      📋 Generate Full Report
+                    </Button>
+                    <Button variant="primary" onClick={() => alert('Calendar integration coming soon!')}>
+                      📅 Schedule Follow-ups
+                    </Button>
+                    <Button variant="secondary" onClick={() => alert('Email insights feature coming soon!')}>
+                      📧 Email Insights
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+      </div>
+      </div>
     </div>
-  )
-}
+  );
+};
+
+export default Dashboard;

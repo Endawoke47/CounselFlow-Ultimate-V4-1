@@ -13,8 +13,24 @@ export class ContractsService {
   ) {}
 
   async create(createContractDto: CreateContractDto): Promise<Contract> {
-    const contract = this.contractsRepository.create(createContractDto);
-    return this.contractsRepository.save(contract);
+    const contractData = {
+      ...createContractDto,
+      parties: Array.isArray(createContractDto.parties) 
+        ? JSON.stringify(createContractDto.parties) 
+        : createContractDto.parties,
+      keyTerms: typeof createContractDto.keyTerms === 'object' 
+        ? JSON.stringify(createContractDto.keyTerms) 
+        : createContractDto.keyTerms,
+      riskAssessment: typeof createContractDto.riskAssessment === 'object' 
+        ? JSON.stringify(createContractDto.riskAssessment) 
+        : createContractDto.riskAssessment,
+      tags: Array.isArray(createContractDto.tags) 
+        ? createContractDto.tags.join(',') 
+        : createContractDto.tags,
+    };
+    const contract = this.contractsRepository.create(contractData as any);
+    const result = await this.contractsRepository.save(contract);
+    return Array.isArray(result) ? result[0] : result;
   }
 
   async findAll(): Promise<Contract[]> {
@@ -38,7 +54,22 @@ export class ContractsService {
   }
 
   async update(id: string, updateContractDto: UpdateContractDto): Promise<Contract> {
-    await this.contractsRepository.update(id, updateContractDto);
+    const updateData = {
+      ...updateContractDto,
+      parties: Array.isArray(updateContractDto.parties) 
+        ? JSON.stringify(updateContractDto.parties) 
+        : updateContractDto.parties,
+      keyTerms: typeof updateContractDto.keyTerms === 'object' 
+        ? JSON.stringify(updateContractDto.keyTerms) 
+        : updateContractDto.keyTerms,
+      riskAssessment: typeof updateContractDto.riskAssessment === 'object' 
+        ? JSON.stringify(updateContractDto.riskAssessment) 
+        : updateContractDto.riskAssessment,
+      tags: Array.isArray(updateContractDto.tags) 
+        ? updateContractDto.tags.join(',') 
+        : updateContractDto.tags,
+    };
+    await this.contractsRepository.update(id, updateData as any);
     return this.findOne(id);
   }
 
